@@ -43,7 +43,7 @@ class RipPLE_GM(nn.Module):
         mask_p[:, pt:pt+x.size(0)].fill_diagonal_(False)
 
         # forward
-        # 先取第0维
+        # take the first dimension first
         loss_L, _ = self.loss_L(x) 
         x = self.f_wrapping(x)
         # loss_L, _ = self.loss_L(x) 

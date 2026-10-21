@@ -44,7 +44,7 @@ class RipPLE(nn.Module):
 
         # forward
         x = self.f_wrapping(x)
-        # reg_loss, _ = self.norm_reg(x) # 这里的x是经过wrapped后的特征
+        # reg_loss, _ = self.norm_reg(x)  # x here is the wrapped feature
         loss_L, _ = self.loss_L(x)
         x_bank = self.f_wrapping(x_bank)
         x = self.f_fusing(x[:, None, :])

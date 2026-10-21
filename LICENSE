@@ -1,7 +1,7 @@
 MIT License
 
 Copyright (c) 2022 Yandong Wen, Weiyang Liu (OpenSphere)
-Copyright (c) 2026 The RipPLE Authors
+Copyright (c) 2026 The RipPLE Zhe Xu, Yandong Wen
 
 This repository extends the OpenSphere framework (https://github.com/ydwen/opensphere)
 with the RipPLE research code. The original MIT license notice is retained above as

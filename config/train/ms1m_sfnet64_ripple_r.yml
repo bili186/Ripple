@@ -59,7 +59,7 @@ model:
     wrap_mode: 'polarlike'
     b_theta: 0.3
     alpha: 0.0005
-    # 参数m和L之间的关系：m = L² × 0.1
+    # Relation between the margin m and the target norm L: m = L² × 0.1
     m: 3.6
     r: 3.0
     L: 6.0

@@ -10,12 +10,12 @@ PyTorch implementation of **"Concentric Hypersphere Embedding for Pairwise Simil
 
 ## Introduction
 
-**RipPLE** is a pairwise learning method for face recognition built on **concentric hypersphere embedding**. Standard practice normalizes embeddings onto a hypersphere and compares them by angle, but the angular score only tells **how similar** two faces appear, not **how much evidence** supports that similarity: under occlusion, extreme pose, or blur, impostor pairs score higher and genuine pairs lower until no threshold separates them, the *feature ambiguity dilemma*, which directly lowers the true acceptance rate at the low FARs that security applications demand. RipPLE instead lets embeddings keep different norms: the **direction encodes identity**, and the **norm expresses how much evidence the input provides**, learned end-to-end by the pairwise loss and used in scoring at inference. Because the norm also scales every logit and acts as the temperature of the loss, where an unconstrained norm hampers convergence while fixing every norm removes the evidence, RipPLE introduces the **expected norm constraint (ENC)**: anchor only the mean norm over the training set, leaving every individual norm free to grow for clear faces and shrink for degraded ones. Under degradation the norm decreases, so the scores of genuine and impostor pairs alike converge toward zero rather than overlapping, and a small absolute score marks a pair as *hard to decide* rather than *wrongly decided*.
+RipPLE is a pairwise learning method for face recognition built on concentric hypersphere embedding. Standard practice normalizes embeddings onto a hypersphere and compares them by angle, but the angular score only tells how similar two faces appear, not how much evidence supports that similarity: under occlusion, extreme pose, or blur, impostor pairs score higher and genuine pairs lower until no threshold separates them, the feature ambiguity dilemma, which directly lowers the true acceptance rate at the low FARs that security applications demand. RipPLE instead lets embeddings keep different norms: the direction encodes identity, and the norm expresses how much evidence the input provides, learned end-to-end by the pairwise loss and used in scoring at inference. Because the norm also scales every logit and acts as the temperature of the loss, where an unconstrained norm hampers convergence while fixing every norm removes the evidence, RipPLE introduces the expected norm constraint (ENC): anchor only the mean norm over the training set, leaving every individual norm free to grow for clear faces and shrink for degraded ones. Under degradation the norm decreases, so the scores of genuine and impostor pairs alike converge toward zero rather than overlapping, and a small absolute score marks a pair as hard to decide rather than wrongly decided.
 
 <p align="center">
   <img src="assets/ripple_concept.png" width="720">
   <br>
-  <em>At a fixed threshold, degradation such as occlusion, noise and blur causes two failure modes: degraded impostor pairs are falsely accepted, and genuine pairs that cross quality levels are falsely rejected, which is the feature ambiguity dilemma. RipPLE encodes how much evidence each input provides in the embedding norm, shown by the marker size, so degraded pairs converge toward the decision boundary and are marked as hard to decide rather than wrongly decided.</em>
+  <em>Under degradation such as occlusion, extreme pose or blur, similarly degraded faces move closer even across identities, while a degraded face moves away from its clean images. Impostor pairs then score higher and genuine pairs lower until the two distributions overlap, the feature ambiguity dilemma. RipPLE encodes how much evidence each input provides in the embedding norm, shown by the marker size, so both distributions converge toward zero and degraded pairs are marked as hard to decide rather than wrongly decided.</em>
 </p>
 
 ## Key Features
@@ -32,15 +32,21 @@ Every anchoring form fixes the overall scale of the norms but differs in what it
 
 | Form | $L_{\mathrm{ENC}}$ | Head |
 |:---|:---|:---|
-| **Arithmetic mean** (main form) | $\mathrm{SmoothL1}(\mathrm{mean}(\lVert x \rVert), \rho)$ | `RipPLE` |
-| **Geometric mean** | $\mathrm{SmoothL1}(\exp(\mathrm{mean}(\log \lVert x \rVert)), \rho)$ | `RipPLE-GM` |
+| **Arithmetic mean** (main form) | $\mathrm{SmoothL1}\left(\frac{1}{B}\sum_{i=1}^{B}\lVert x_i \rVert, \rho\right)$ | `RipPLE` |
+| **Geometric mean** | $\mathrm{SmoothL1}\left(\exp\left(\frac{1}{B}\sum_{i=1}^{B}\log \lVert x_i \rVert\right), \rho\right)$ | `RipPLE-GM` |
 | **Per-pair** | $d^2_{ij}/(s_i+s_j) + \log(s_i+s_j)$ | `RipPLE-P` |
 
 **Arithmetic mean (RipPLE).** The mean norm $\rho$ sets the loss temperature that training and inference share, so a typical logit is $\rho^2(\cos\theta - b_\theta)$. Every individual norm stays free to carry evidence, which gives the best verification accuracy. `SimPLE+ENC` (`RipPLE-R`) is this form combined with SimPLE's asymmetric temperature.
 
-**Geometric mean (RipPLE-GM).** Anchors $\exp(\mathrm{mean}(\log \lVert x \rVert))$, the multiplicative center of the radii. It is exact under the exponential norm map, where $\log \lVert x \rVert$ is linear in the output coordinate, and suits radii that span orders of magnitude; performance lands close to the arithmetic form.
+**Geometric mean (RipPLE-GM).** Anchors $\exp\left(\frac{1}{B}\sum_{i=1}^{B}\log \lVert x_i \rVert\right)$, the multiplicative center of the radii. The norm map can be either softplus or exponential: under the exponential map, where $\log \lVert x \rVert$ is linear in the output coordinate, the anchor is exact, while softplus keeps the norm positive and smooth at the cost of an approximate geometric center. It suits radii that span orders of magnitude; performance lands close to the arithmetic form.
 
 **Per-pair (RipPLE-P).** With $s_i = (\rho/\lVert x_i \rVert)^2$ and the batch-normalized squared directional difference $d^2_{ij}$ (detached), the first-order condition $s_i+s_j = d^2_{ij}$ ties each pair's scales to its directional difference, and the log term prevents collapse. Verification is slightly below the mean forms, but the norm becomes readable image by image: ranking template frames by norm and discarding the lowest-ranked fraction moves TAR@FAR=1e-4 from 94.71 to 98.37 on IJB-B and from 96.60 to 99.47 on IJB-C, above PFE's uncertainty ranking.
+
+<p align="center">
+  <img src="assets/ripple_p_vs_pfe.png" width="720">
+  <br>
+  <em>TAR@FAR=1e-4 as a function of the fraction of lowest-norm template frames discarded, on IJB-B (a) and IJB-C (b). Ranking by the RipPLE-P norm stays above PFE's uncertainty ranking across all filter-out rates.</em>
+</p>
 
 ## Results
 
@@ -57,7 +63,7 @@ Every anchoring form fixes the overall scale of the norms but differs in what it
 ## Setup
 
 ```console
-git clone <this-repo>
+git clone https://github.com/bili186/Ripple.git
 cd Ripple
 conda env create -f environment.yml
 conda activate ripple
@@ -105,7 +111,7 @@ python main_inference.py --image_dir <your_images> --proj_dir project/ripple/<ti
 
 ## Acknowledgements
 
-This repository is a research project built on top of [**OpenSphere**](https://github.com/ydwen/opensphere) — the training/testing framework, backbones (IResNet, SFNet), the SimPLE head, and the proxy-based baseline heads are inherited from it (the `opensphere/` package name is kept in tribute). The EMA feature bank in `proxy_free_trainer.py` is adapted from [MoCo](https://github.com/facebookresearch/moco). Face alignment in `face_alignment/` uses the [MTCNN PyTorch](https://github.com/DuinoDu/mtcnn) implementation. MS1M is unpacked with a script based on InsightFace's `rec2image.py`. We gratefully thank all these authors for open-sourcing their work.
+This repository is a research project built on top of [**OpenSphere**](https://github.com/ydwen/opensphere): the training/testing framework, backbones (IResNet, SFNet), the SimPLE head, and the proxy-based baseline heads are inherited from it, and the `opensphere/` package name is kept in tribute. We gratefully thank its authors for open-sourcing their work.
 
 ## Citation
 

@@ -44,7 +44,7 @@ class RipPLE_P(nn.Module):
 
         # forward
         x = self.f_wrapping(x)
-        # reg_loss, _ = self.norm_reg(x) # 这里的x是经过wrapped后的特征
+        # reg_loss, _ = self.norm_reg(x)  # x here is the wrapped feature
         loss_L, _ = self.loss_L(x, y)
         x_bank = self.f_wrapping(x_bank)
         x = self.f_fusing(x[:, None, :])
@@ -73,30 +73,26 @@ class RipPLE_P(nn.Module):
     
     def loss_L(self, x, y=None):
         """
-        :param x: wrapped 特征 [B, feat_dim] (其 2-范数即判决分中的模长 r)
-        :param y: 样本标签 [B] (用于构造 batch 内同身份对)
+        :param x: wrapped features [B, feat_dim], whose 2-norm is the magnitude r in the score
+        :param y: sample labels [B], used to build same-identity pairs within the batch
         :return: loss_L, mean_magnitude
         """
-        n = torch.norm(x, p=2, dim=-1)                      # [B] 逐样本模长
+        n = torch.norm(x, p=2, dim=-1)                      # [B] per-sample norm
 
         if y is not None:
             b = x.size(0)
             mask = y.view(-1, 1).eq(y.view(1, -1))
             mask = mask & (~torch.eye(b, dtype=torch.bool, device=x.device))
             if bool(mask.any()):
-                u = x / (n[:, None] + 1e-12)                     # 单位方向
-                # d^2 只当"目标"用, 必须 detach: 否则模型可以靠"让同身份特征互相
-                # 靠拢(d^2->0)"来降低 log(d^2) —— 直接塌缩特征空间, 而不去调模长。
-                d2 = (2.0 - 2.0 * (u @ u.t())).clamp(min=1e-4).detach()   # [B,B] 2(1-cos)
-                # 批内归一化: 让似然隐含的 r 尺度 ≈ 锚 L, 否则锚与似然互相拉扯
+                u = x / (n[:, None] + 1e-12) 
+                d2 = (2.0 - 2.0 * (u @ u.t())).clamp(min=1e-4).detach()
                 d2 = d2 / d2[mask].mean() * 2.0
-                s = (self.L / n.clamp(min=1e-3)).pow(2)          # [B] "误差"
-                s = s.clamp(min=1e-3)                            # 给 r 一个上界
-                s2 = s[:, None] + s[None, :]                     # [B,B] 误差和
+                s = (self.L / n.clamp(min=1e-3)).pow(2)
+                s = s.clamp(min=1e-3)
+                s2 = s[:, None] + s[None, :]
                 mls = (d2 / (1e-6 + s2) + torch.log(s2))[mask].mean()
                 return mls, n.mean()
-
-        # ---- 兜底: batch 内无同身份对时退回"均值锚" ----
+            
         mean_magnitude = n.mean()
         loss_L = F.smooth_l1_loss(
             mean_magnitude,

@@ -22,7 +22,8 @@ class Model():
             raise KeyError('Missing key "head" in `cfg`', cfg)
         # build modules
         args = deepcopy(cfg)
-        # 设备无关：GPU 可用时用 self.rank(CUDA device)，否则落到 CPU，便于无 GPU 节点跑推理
+        # Device-agnostic: use self.rank (CUDA device) when GPUs are available,
+        # otherwise fall back to CPU so that inference runs on GPU-less nodes.
         self.device = self.rank if torch.cuda.is_available() else 'cpu'
         self.backbone = self.build_module(args['backbone']).to(self.device)
         self.head = self.build_module(args['head']).to(self.device)
