@@ -1,0 +1,23 @@
+data:
+  test:
+  - dataset:
+      type: PairDataset
+      name: CALFW
+      data_dir: data/val/
+      ann_path: data/val/calfw_ann.txt
+      test_mode: true
+      metrics:
+      - ACC
+      - EER
+      - AUC
+      - TPR@FPR=1e-4
+      - TPR@FPR=5e-4
+      - TPR@FPR=1e-3
+      - TPR@FPR=5e-3
+      - TPR@FPR=1e-2
+    dataloader:
+      type: DataLoader
+      batch_size: 512
+      shuffle: false
+      drop_last: false
+      num_workers: 4

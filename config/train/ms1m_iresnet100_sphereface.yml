@@ -1,0 +1,79 @@
+data:
+  train:
+    dataset:
+      type: ClassDataset
+      name: MS1M
+      data_dir: data/train/ms1m_refine/ms1m_refine_112x112
+      lst_path: data/train/ms1m_refine/ms1m_refine.lst
+      test_mode: false
+      augment_params: {
+        horizontal_flip: true, lowres_prob: 0.,
+        crop_prob: 0., photo_prob: 0.,
+      }
+    dataloader: {
+      type: DataLoader, batch_size: 512,
+      shuffle: true, drop_last: true,
+      num_workers: 4, pin_memory: true,
+    }
+  val:
+  - dataset:
+      type: PairDataset
+      name: MS
+      data_dir: data/train/ms1m_refine/ms1m_refine_112x112
+      ann_path: data/train/ms1m_refine/ms1m_refine_pairs.lst
+      test_mode: true
+      metrics: [
+        EER, AUC, TPR@FPR=1e-4, TPR@FPR=5e-4,
+        TPR@FPR=1e-3, TPR@FPR=5e-3, TPR@FPR=1e-2,
+      ]
+    dataloader: {
+      type: DataLoader, batch_size: 128,
+      shuffle: false, drop_last: false,
+      num_workers: 4, pin_memory: true,
+    }
+  - dataset:
+      type: PairDataset
+      name: CB
+      data_dir: data/val/
+      ann_path: data/val/combined_pairs.lst
+      test_mode: true
+      metrics: [
+        EER, AUC, TPR@FPR=1e-4, TPR@FPR=5e-4,
+        TPR@FPR=1e-3, TPR@FPR=5e-3, TPR@FPR=1e-2,
+      ]
+    dataloader: {
+      type: DataLoader, batch_size: 128,
+      shuffle: false, drop_last: false,
+      num_workers: 4, pin_memory: true,
+    }
+model:
+  backbone:
+    type: iresnet100
+    embed_dim: 512
+  head:
+    type: SphereFace
+    s: 64
+    m: 1.7
+    feat_dim: -1
+    subj_num: -1
+trainer:
+  type: ProxyBasedTrainer
+  # steps, gradient_clip, optimizer, scheduler
+  amp: true
+  max_grad_norm: 100.0
+  # steps
+  val_intvl: 10000
+  ckpt_steps: [60000, 120000, 180000, 240000]
+  save_steps: [232000, 234000, 236000, 238000, 240000]
+  optimizer:
+    type: SGD
+    lr: 0.1
+    momentum: 0.9
+    weight_decay: 0.0005
+  scheduler:
+    type: MultiStepLR
+    milestones: [80000, 140000, 200000, 240000]
+    gamma: 0.1  
+  # log
+  train_log: {name: 'train', info_intvl: 200, fmt: '6.3f'}
+  val_log: {name: 'val', info_intvl: 1, fmt: '6.3f'}

@@ -1,0 +1,96 @@
+data:
+  train:
+    dataset:
+      type: GroupClassDataset
+      name: MS1M
+      data_dir: data/train/ms1m_arcface/ms1m_arcface_112x112
+      lst_path: data/train/ms1m_arcface/ms1m_arcface.lst
+      sample_per_subj: 4
+      unbalance_factor: 0.5
+      test_mode: false
+      augment_params: {
+        horizontal_flip: true, lowres_prob: 0.2,
+        crop_prob: 0.2, photo_prob: 0.2,
+      }
+    dataloader: {
+      type: DataLoader, batch_size: 128,
+      shuffle: true, drop_last: true,
+      num_workers: 4, pin_memory: true,
+      sampler: {'type': 'DistributedWeightedSampler', total_size: 1000000},
+    }
+  val:
+  - dataset:
+      type: PairDataset
+      name: MS
+      data_dir: data/train/ms1m_arcface/ms1m_arcface_112x112
+      ann_path: data/train/ms1m_arcface/ms1m_arcface_pair.lst
+      test_mode: true
+      metrics: [
+        ACC, EER, AUC, TPR@FPR=1e-4, TPR@FPR=5e-4,
+        TPR@FPR=1e-3, TPR@FPR=5e-3, TPR@FPR=1e-2,
+      ]
+    dataloader: {
+      type: DataLoader, batch_size: 128,
+      shuffle: false, drop_last: false, 
+      num_workers: 4, pin_memory: true,
+    }
+  - dataset:
+      type: PairDataset
+      name: CB
+      data_dir: data/val/
+      ann_path: data/val/combined_ann.txt
+      test_mode: true
+      metrics: [
+        ACC, EER, AUC, TPR@FPR=1e-4, TPR@FPR=5e-4,
+        TPR@FPR=1e-3, TPR@FPR=5e-3, TPR@FPR=1e-2,
+      ]
+    dataloader: {
+      type: DataLoader, batch_size: 128,
+      shuffle: false, drop_last: false,
+      num_workers: 4, pin_memory: true,
+    }
+model:
+  backbone:
+    type: iresnet100
+    embed_dim: 512
+  head:
+    type: RipPLE_GM
+    wrap_mode: 'explike'
+    b_theta: 0.3
+    alpha: 0.0001
+    # polarlike: 参数m和L之间的关系：m = L² × 0.1
+    # explike: 参数m和L之间的关系：m = (lnL)² × 0.1
+    m: 6.0
+    L: 9.0
+    lambda_: 0.1
+    lw: 500.
+    init_bias: -10.
+trainer:
+  type: ProxyFreeTrainer
+  # steps, gradient_clip, optimizer, scheduler
+  amp: true
+  num_bank: 524288
+  max_grad_norm: 100.0
+  encoder_momentum: 0.999
+  shuffle_across_gpus: true
+  # steps
+  val_intvl: 10000
+  ckpt_steps: [60000, 120000, 180000, 240000]
+  save_steps: [232000, 234000, 236000, 238000, 240000]
+  # best model selection: choose from EER, ACC, AUC; best_dataset: MS or CB
+  best_metric: ACC
+  best_dataset: CB
+  optimizer:
+    type: SGD
+    lr: 0.1
+    head_lr: 0.01
+    momentum: 0.9
+    weight_decay: 0.0005
+    head_wd: 0.0005
+  scheduler:
+    type: MultiStepLR
+    milestones: [80000, 140000, 200000, 240000]
+    gamma: 0.1  
+  # log
+  train_log: {name: 'train', info_intvl: 200, fmt: '6.3f'}
+  val_log: {name: 'val', info_intvl: 1, fmt: '6.3f'}

@@ -1,0 +1,14 @@
+# data, checkpoints and logs
+data/
+project/
+logs/
+*.pth
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# os / editor
+.DS_Store
+*.swp
