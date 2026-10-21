@@ -7,11 +7,10 @@ Research configs live in `config/train` (all trained on MS1M with `ProxyFreeTrai
 | Config | Paper name | Anchoring form | Backbone |
 |:---|:---|:---|:---|
 | `ms1m_iresnet100_ripple.yml` | RipPLE | arithmetic-mean ENC (`RipPLE` head) | IResNet-100 |
-| `ms1m_iresnet100_ripple_r.yml` | SimPLE+ENC | arithmetic-mean ENC + asymmetric temperature `r` (`SimPLE` head with `enc: true`) | IResNet-100 |
 | `ms1m_iresnet100_ripple_gm.yml` | RipPLE-GM | geometric-mean ENC, `explike` norm map (`RipPLE_GM` head) | IResNet-100 |
 | `ms1m_iresnet100_ripple_p.yml` | RipPLE-P | per-pair ENC (`RipPLE_P` head) | IResNet-100 |
 | `ms1m_iresnet100_simple.yml` | SimPLE | — (baseline) | IResNet-100 |
-| `ms1m_sfnet64_ripple.yml` / `ms1m_sfnet64_ripple_r.yml` | RipPLE / SimPLE+ENC | arithmetic-mean ENC | SFNet-64 |
+| `ms1m_sfnet64_ripple.yml` | RipPLE | arithmetic-mean ENC | SFNet-64 |
 
 Supervised proxy baselines inherited from OpenSphere also live in `config/train/` (`ms1m_iresnet100_{arcface,cosface,sphereface,sphereface2}.yml`).
 
