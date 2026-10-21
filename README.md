@@ -157,3 +157,7 @@ If you find this work useful, please cite: (a) the RipPLE paper (under review â€
 ## License
 
 This project is released under the [MIT License](LICENSE), inheriting the MIT License of OpenSphere. Third-party components keep their original licenses (see `face_alignment/mtcnn_pytorch/LICENSE`).
+
+## Update Notes
+
+21/10/2026: Initial Upload.
