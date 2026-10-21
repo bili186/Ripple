@@ -20,7 +20,7 @@ RipPLE is a pairwise learning method for face recognition built on concentric hy
 
 ## Key Features
 
-- **Loss heads**: the four anchoring forms of the expected norm constraint, `RipPLE` (arithmetic mean, main form), `RipPLE-R` (with asymmetric temperature), `RipPLE-GM` (geometric mean), `RipPLE-P` (per-pair), plus the [SimPLE](https://arxiv.org/abs/2310.09449) baseline and supervised proxies (Softmax, [CocoLoss](https://arxiv.org/pdf/1710.00870.pdf), [SphereFace](https://wyliu.com/papers/LiuCVPR17v3.pdf), [CosFace](https://arxiv.org/pdf/1801.09414.pdf), [ArcFace](https://arxiv.org/pdf/1801.07698.pdf), [SphereFace2](https://wyliu.com/papers/sphereface2_ICLR22.pdf))
+- **Loss heads**: the three anchoring forms of the expected norm constraint, `RipPLE` (arithmetic mean, main form), `RipPLE-GM` (geometric mean), `RipPLE-P` (per-pair), plus the [SimPLE](https://arxiv.org/abs/2310.09449) baseline and supervised proxies (Softmax, [CocoLoss](https://arxiv.org/pdf/1710.00870.pdf), [SphereFace](https://wyliu.com/papers/LiuCVPR17v3.pdf), [CosFace](https://arxiv.org/pdf/1801.09414.pdf), [ArcFace](https://arxiv.org/pdf/1801.07698.pdf), [SphereFace2](https://wyliu.com/papers/sphereface2_ICLR22.pdf))
 - **Backbones**: [IResNet-100](https://openaccess.thecvf.com/content_cvpr_2016/papers/He_Deep_Residual_Learning_CVPR_2016_paper.pdf), [SFNet-64](https://wyliu.com/papers/spherefacer_v3_TPAMI.pdf)
 - **Datasets**: training on [MS1MV2](https://arxiv.org/pdf/1607.08221.pdf); validation on [LFW](http://vis-www.cs.umass.edu/lfw/), [AgeDB-30](https://ibug.doc.ic.ac.uk/media/uploads/documents/agedb.pdf), [CALFW](https://arxiv.org/pdf/1708.08197.pdf), [CPLFW](http://www.whdeng.cn/CPLFW/Cross-Pose-LFW.pdf), [CFP-FP](http://www.cfpw.io/); testing on [IJB-B](https://openaccess.thecvf.com/content_cvpr_2017_workshops/w6/papers/Whitelam_IARPA_Janus_Benchmark-B_CVPR_2017_paper.pdf) and [IJB-C](http://biometrics.cse.msu.edu/Publications/Face/Mazeetal_IARPAJanusBenchmarkCFaceDatasetAndProtocol_ICB2018.pdf)
 - **Protocols**: 1:1 verification (TAR@FAR), 1:N identification (TPIR@FPIR, rank-1), image-level norm filtering, embedding extraction on arbitrary image folders
@@ -36,7 +36,7 @@ Every anchoring form fixes the overall scale of the norms but differs in what it
 | **Geometric mean** | $\mathrm{SmoothL1}\left(\exp\left(\frac{1}{B}\sum_{i=1}^{B}\log \lVert x_i \rVert\right), \rho\right)$ | `RipPLE-GM` |
 | **Per-pair** | $d^2_{ij}/(s_i+s_j) + \log(s_i+s_j)$ | `RipPLE-P` |
 
-**Arithmetic mean (RipPLE).** The mean norm $\rho$ sets the loss temperature that training and inference share, so a typical logit is $\rho^2(\cos\theta - b_\theta)$. Every individual norm stays free to carry evidence, which gives the best verification accuracy. `SimPLE+ENC` (`RipPLE-R`) is this form combined with SimPLE's asymmetric temperature.
+**Arithmetic mean (RipPLE).** The mean norm $\rho$ sets the loss temperature that training and inference share, so a typical logit is $\rho^2(\cos\theta - b_\theta)$. Every individual norm stays free to carry evidence, which gives the best verification accuracy.
 
 **Geometric mean (RipPLE-GM).** Anchors $\exp\left(\frac{1}{B}\sum_{i=1}^{B}\log \lVert x_i \rVert\right)$, the multiplicative center of the radii. The norm map can be either softplus or exponential: under the exponential map, where $\log \lVert x \rVert$ is linear in the output coordinate, the anchor is exact, while softplus keeps the norm positive and smooth at the cost of an approximate geometric center. It suits radii that span orders of magnitude; performance lands close to the arithmetic form.
 
@@ -55,7 +55,7 @@ Every anchoring form fixes the overall scale of the norms but differs in what it
 | Method | IJB-B 1e-6 | IJB-B 1e-5 | IJB-B 1e-4 | IJB-C 1e-6 | IJB-C 1e-5 | IJB-C 1e-4 | 1:N top1 (B/C) | 1:N TPIR@1e-2 (B/C) |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | SimPLE | 49.87 | 91.13 | 94.78 | 90.30 | 94.34 | 96.27 | 95.54 / 96.81 | 85.92 / 92.88 |
-| SimPLE+ENC (`RipPLE-R`) | **51.89** | 91.88 | 95.35 | 90.55 | 94.61 | 96.66 | 95.42 / 96.78 | 84.34 / 93.01 |
+| SimPLE+ENC | **51.89** | 91.88 | 95.35 | 90.55 | 94.61 | 96.66 | 95.42 / 96.78 | 84.34 / 93.01 |
 | **RipPLE** | 44.72 | **92.57** | **95.50** | **92.13** | **95.09** | **96.82** | 95.41 / 96.75 | **87.21 / 93.89** |
 | RipPLE-P | 44.63 | 92.19 | 95.37 | 90.19 | 94.93 | 96.67 | 95.05 / 96.34 | 85.29 / 93.29 |
 | RipPLE-GM | 38.76 | 92.01 | 95.20 | 90.75 | 94.78 | 96.58 | 95.27 / 96.58 | 87.32 / 93.30 |
