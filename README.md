@@ -15,12 +15,12 @@ PyTorch implementation of **"Concentric Hypersphere Embedding for Pairwise Simil
 <p align="center">
   <img src="assets/ripple_concept.png" width="720">
   <br>
-  <em>Concept. Degradation (occlusion, noise, blur) creates two failure modes at a fixed threshold: degraded impostor pairs are falsely accepted, and genuine pairs that cross quality levels are falsely rejected — the feature ambiguity dilemma. RipPLE encodes how much evidence each input provides in the embedding norm (marker size): degraded pairs converge toward the decision boundary and are marked <i>hard to decide</i> rather than <i>wrongly decided</i>.</em>
+  <em>At a fixed threshold, degradation such as occlusion, noise and blur causes two failure modes: degraded impostor pairs are falsely accepted, and genuine pairs that cross quality levels are falsely rejected, which is the feature ambiguity dilemma. RipPLE encodes how much evidence each input provides in the embedding norm, shown by the marker size, so degraded pairs converge toward the decision boundary and are marked as hard to decide rather than wrongly decided.</em>
 </p>
 
 ## Key Features
 
-- **Loss heads**: the four anchoring forms of the expected norm constraint, `RipPLE` (arithmetic mean, main form), `RipPLE_R` (with asymmetric temperature), `RipPLE_GM` (geometric mean), `RipPLE_P` (per-pair), plus the [SimPLE](https://arxiv.org/abs/2310.09449) baseline and supervised proxies (Softmax, [CocoLoss](https://arxiv.org/pdf/1710.00870.pdf), [SphereFace](https://wyliu.com/papers/LiuCVPR17v3.pdf), [CosFace](https://arxiv.org/pdf/1801.09414.pdf), [ArcFace](https://arxiv.org/pdf/1801.07698.pdf), [SphereFace2](https://wyliu.com/papers/sphereface2_ICLR22.pdf))
+- **Loss heads**: the four anchoring forms of the expected norm constraint, `RipPLE` (arithmetic mean, main form), `RipPLE-R` (with asymmetric temperature), `RipPLE-GM` (geometric mean), `RipPLE-P` (per-pair), plus the [SimPLE](https://arxiv.org/abs/2310.09449) baseline and supervised proxies (Softmax, [CocoLoss](https://arxiv.org/pdf/1710.00870.pdf), [SphereFace](https://wyliu.com/papers/LiuCVPR17v3.pdf), [CosFace](https://arxiv.org/pdf/1801.09414.pdf), [ArcFace](https://arxiv.org/pdf/1801.07698.pdf), [SphereFace2](https://wyliu.com/papers/sphereface2_ICLR22.pdf))
 - **Backbones**: [IResNet-100](https://openaccess.thecvf.com/content_cvpr_2016/papers/He_Deep_Residual_Learning_CVPR_2016_paper.pdf), [SFNet-64](https://wyliu.com/papers/spherefacer_v3_TPAMI.pdf)
 - **Datasets**: training on [MS1MV2](https://arxiv.org/pdf/1607.08221.pdf); validation on [LFW](http://vis-www.cs.umass.edu/lfw/), [AgeDB-30](https://ibug.doc.ic.ac.uk/media/uploads/documents/agedb.pdf), [CALFW](https://arxiv.org/pdf/1708.08197.pdf), [CPLFW](http://www.whdeng.cn/CPLFW/Cross-Pose-LFW.pdf), [CFP-FP](http://www.cfpw.io/); testing on [IJB-B](https://openaccess.thecvf.com/content_cvpr_2017_workshops/w6/papers/Whitelam_IARPA_Janus_Benchmark-B_CVPR_2017_paper.pdf) and [IJB-C](http://biometrics.cse.msu.edu/Publications/Face/Mazeetal_IARPAJanusBenchmarkCFaceDatasetAndProtocol_ICB2018.pdf)
 - **Protocols**: 1:1 verification (TAR@FAR), 1:N identification (TPIR@FPIR, rank-1), image-level norm filtering, embedding extraction on arbitrary image folders
@@ -28,25 +28,19 @@ PyTorch implementation of **"Concentric Hypersphere Embedding for Pairwise Simil
 
 ## Anchoring forms of the constraint
 
-Pairs are scored with the generalized inner product `S = ‖x1‖·‖x2‖·(cosθ − bθ)` and trained with a pairwise loss plus the expected norm constraint (ENC):
+Every anchoring form fixes the overall scale of the norms but differs in what it anchors. The constraint is needed because the norm also scales every logit and thus acts as the temperature of the loss: unconstrained it hampers convergence, fixed per sample it removes the evidence. ENC anchors only the collective scale of the norms; each individual norm is then steered by the pairwise loss alone and grows only when its direction already supports the correct decision. Three anchoring losses are implemented:
 
-```
-L = L_pair(m) + λ · L_ENC
-```
-
-The constraint is needed because the norm also scales every logit and thus acts as the temperature of the loss: unconstrained it hampers convergence, fixed per sample it removes the evidence. ENC anchors only the collective scale of the norms; each individual norm is then steered by the pairwise loss alone and grows only when its direction already supports the correct decision. Three anchoring losses are implemented:
-
-| Form | L_ENC | Head |
+| Form | $L_{\mathrm{ENC}}$ | Head |
 |:---|:---|:---|
-| **Arithmetic mean** (main form) | `SmoothL1(mean(‖x‖), ρ)` | `RipPLE` |
-| **Geometric mean** | `SmoothL1(exp·mean(log‖x‖), ρ)` | `RipPLE_GM` |
-| **Per-pair** | `d²ᵢⱼ/(sᵢ+sⱼ) + log(sᵢ+sⱼ)` | `RipPLE_P` |
+| **Arithmetic mean** (main form) | $\mathrm{SmoothL1}(\mathrm{mean}(\lVert x \rVert), \rho)$ | `RipPLE` |
+| **Geometric mean** | $\mathrm{SmoothL1}(\exp(\mathrm{mean}(\log \lVert x \rVert)), \rho)$ | `RipPLE-GM` |
+| **Per-pair** | $d^2_{ij}/(s_i+s_j) + \log(s_i+s_j)$ | `RipPLE-P` |
 
-**Arithmetic mean (RipPLE).** The mean norm `ρ` sets the loss temperature that training and inference share, playing the role of the fixed scale `s=64` in normalized losses (a typical logit is `ρ²(cosθ−bθ)`). Every individual norm stays free to carry evidence, which gives the best verification accuracy. `SimPLE+ENC` (`RipPLE_R`) is this form combined with SimPLE's asymmetric temperature.
+**Arithmetic mean (RipPLE).** The mean norm $\rho$ sets the loss temperature that training and inference share, so a typical logit is $\rho^2(\cos\theta - b_\theta)$. Every individual norm stays free to carry evidence, which gives the best verification accuracy. `SimPLE+ENC` (`RipPLE-R`) is this form combined with SimPLE's asymmetric temperature.
 
-**Geometric mean (RipPLE-GM).** Anchors `exp·mean(log‖x‖)`, the multiplicative center of the radii. It is exact under the exponential norm map, where `log‖x‖` is linear in the output coordinate, and suits radii that span orders of magnitude; performance lands close to the arithmetic form.
+**Geometric mean (RipPLE-GM).** Anchors $\exp(\mathrm{mean}(\log \lVert x \rVert))$, the multiplicative center of the radii. It is exact under the exponential norm map, where $\log \lVert x \rVert$ is linear in the output coordinate, and suits radii that span orders of magnitude; performance lands close to the arithmetic form.
 
-**Per-pair (RipPLE-P).** With `sᵢ = (ρ/‖xᵢ‖)²` and the batch-normalized squared directional difference `d²ᵢⱼ` (detached), the first-order condition `sᵢ+sⱼ = d²ᵢⱼ` ties each pair's scales to its directional difference, and the log term prevents collapse. Verification is slightly below the mean forms, but the norm becomes readable image by image: ranking template frames by norm and discarding the lowest-ranked fraction moves TAR@FAR=1e-4 from 94.71 to 98.37 on IJB-B and from 96.60 to 99.47 on IJB-C, above PFE's uncertainty ranking.
+**Per-pair (RipPLE-P).** With $s_i = (\rho/\lVert x_i \rVert)^2$ and the batch-normalized squared directional difference $d^2_{ij}$ (detached), the first-order condition $s_i+s_j = d^2_{ij}$ ties each pair's scales to its directional difference, and the log term prevents collapse. Verification is slightly below the mean forms, but the norm becomes readable image by image: ranking template frames by norm and discarding the lowest-ranked fraction moves TAR@FAR=1e-4 from 94.71 to 98.37 on IJB-B and from 96.60 to 99.47 on IJB-C, above PFE's uncertainty ranking.
 
 ## Results
 
@@ -55,7 +49,7 @@ The constraint is needed because the norm also scales every logit and thus acts 
 | Method | IJB-B 1e-6 | IJB-B 1e-5 | IJB-B 1e-4 | IJB-C 1e-6 | IJB-C 1e-5 | IJB-C 1e-4 | 1:N top1 (B/C) | 1:N TPIR@1e-2 (B/C) |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | SimPLE | 49.87 | 91.13 | 94.78 | 90.30 | 94.34 | 96.27 | 95.54 / 96.81 | 85.92 / 92.88 |
-| SimPLE+ENC (`RipPLE_R`) | **51.89** | 91.88 | 95.35 | 90.55 | 94.61 | 96.66 | 95.42 / 96.78 | 84.34 / 93.01 |
+| SimPLE+ENC (`RipPLE-R`) | **51.89** | 91.88 | 95.35 | 90.55 | 94.61 | 96.66 | 95.42 / 96.78 | 84.34 / 93.01 |
 | **RipPLE** | 44.72 | **92.57** | **95.50** | **92.13** | **95.09** | **96.82** | 95.41 / 96.75 | **87.21 / 93.89** |
 | RipPLE-P | 44.63 | 92.19 | 95.37 | 90.19 | 94.93 | 96.67 | 95.05 / 96.34 | 85.29 / 93.29 |
 | RipPLE-GM | 38.76 | 92.01 | 95.20 | 90.75 | 94.78 | 96.58 | 95.27 / 96.58 | 87.32 / 93.30 |
