@@ -69,7 +69,7 @@ Place data under `data/` (paths follow the training configs):
 
 ```console
 bash scripts/dataset_setup.sh        # validation + testing sets
-bash scripts/dataset_setup_ms1m.sh   # training set (MS1M, from the OpenSphere mirror)
+bash scripts/dataset_setup_ms1m.sh   # training set
 ```
 
 Alternatively, unpack an InsightFace-style MS1M recordIO into the expected layout (`data/train/ms1m_arcface/ms1m_arcface_112x112` + `.lst`):
