@@ -54,7 +54,8 @@ model:
     type: iresnet100
     embed_dim: 512
   head:
-    type: RipPLE_R
+    type: SimPLE
+    enc: true
     wrap_mode: 'polarlike'
     b_theta: 0.3
     alpha: 0.0001

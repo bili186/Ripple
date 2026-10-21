@@ -5,12 +5,16 @@ import torch.nn.functional as F
 from ...utils.dist_helper import get_rank, get_world_size
 from .common import get_wrapping, get_fusing, get_scoring
 
+
 class SimPLE(nn.Module):
+    """Pairwise head. enc=True adds the expected norm constraint (SimPLE+ENC)."""
+
     def __init__(
         self, wrap_mode='cartesian',
         b_theta = 0.3,
         alpha=0.0001, r=1.,
         m=0., lw=1000.,
+        enc=False, L=10.0, lambda_=0.03,
         init_bias=-10.,
     ):
         super().__init__()
@@ -29,6 +33,11 @@ class SimPLE(nn.Module):
         self.m = m
         self.lw = lw
 
+        # expected norm constraint
+        self.enc = enc
+        self.L = L
+        self.lambda_ = lambda_
+
         # init bias
         self.bias = nn.Parameter(init_bias + 0. * torch.Tensor(1))
 
@@ -42,6 +51,9 @@ class SimPLE(nn.Module):
 
         #
         x = self.f_wrapping(x)
+        loss_L = None
+        if self.enc:
+            loss_L, _ = self.loss_L(x)
         x_bank = self.f_wrapping(x_bank)
         x = self.f_fusing(x[:, None, :])
         x_bank = self.f_fusing(x_bank[:, None, :])
@@ -55,6 +67,21 @@ class SimPLE(nn.Module):
         # loss
         loss_p = F.binary_cross_entropy_with_logits(logits_p, torch.ones_like(logits_p))
         loss_n = F.binary_cross_entropy_with_logits(logits_n, torch.zeros_like(logits_n))
-        loss = self.alpha * loss_p + (1. - self.alpha) * loss_n
+        bce_loss = self.alpha * loss_p + (1. - self.alpha) * loss_n
 
-        return self.lw * loss
+        if self.enc:
+            return self.lw * bce_loss + self.lambda_ * loss_L
+        return self.lw * bce_loss
+
+
+    def loss_L(self, x):
+        """
+        :param x: raw feature [B, feat_dim]
+        :return: loss_L, mean_magnitude
+        """
+        mean_magnitude = torch.norm(x, p=2, dim=-1).mean()
+        loss_L = F.smooth_l1_loss(
+            mean_magnitude,
+            self.L * torch.ones_like(mean_magnitude)
+        )
+        return loss_L, mean_magnitude

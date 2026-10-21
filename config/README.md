@@ -7,7 +7,7 @@ Research configs live in `config/train` (all trained on MS1M with `ProxyFreeTrai
 | Config | Paper name | Anchoring form | Backbone |
 |:---|:---|:---|:---|
 | `ms1m_iresnet100_ripple.yml` | RipPLE | arithmetic-mean ENC (`RipPLE` head) | IResNet-100 |
-| `ms1m_iresnet100_ripple_r.yml` | SimPLE+ENC | arithmetic-mean ENC + asymmetric temperature `r` (`RipPLE_R` head) | IResNet-100 |
+| `ms1m_iresnet100_ripple_r.yml` | SimPLE+ENC | arithmetic-mean ENC + asymmetric temperature `r` (`SimPLE` head with `enc: true`) | IResNet-100 |
 | `ms1m_iresnet100_ripple_gm.yml` | RipPLE-GM | geometric-mean ENC, `explike` norm map (`RipPLE_GM` head) | IResNet-100 |
 | `ms1m_iresnet100_ripple_p.yml` | RipPLE-P | per-pair ENC (`RipPLE_P` head) | IResNet-100 |
 | `ms1m_iresnet100_simple.yml` | SimPLE | — (baseline) | IResNet-100 |
@@ -46,5 +46,6 @@ See the examples in `config/train` and `config/test`. Key head hyperparameters o
 - `wrap_mode`: `polarlike` (softplus norm × unit direction) or `explike` (exp norm; required for the exact geometric-mean form)
 - `L` / `lambda_`: target norm `ρ` and weight `λ` of the expected norm constraint `loss_L`
 - `m`: score margin, an absolute offset on the `ρ`-scale — it moves together with `ρ` in the hyperparameter search (search convention: `m = ρ² × 0.1` for `polarlike`, `m = (ln ρ)² × 0.1` for `explike`)
+- `enc`: set `true` to add the expected norm constraint to the `SimPLE` head
 - `r`: asymmetric temperature (SimPLE+ENC keeps SimPLE's `r`; `r=1` in RipPLE)
 - `alpha`: genuine/impostor pair balance weight `α`

@@ -6,6 +6,5 @@ from .arcface import ArcFace
 from .sphereface2 import SphereFace2
 from .simple import SimPLE
 from .ripple import RipPLE
-from .ripple_r import RipPLE_R
 from .ripple_gm import RipPLE_GM
 from .ripple_p import RipPLE_P
