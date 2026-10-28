@@ -161,4 +161,5 @@ This project is released under the [MIT License](LICENSE), inheriting the MIT Li
 
 ## Update Notes
 
+28/10/2026: Upload Model
 21/10/2026: Initial Upload.
