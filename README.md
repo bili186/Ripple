@@ -5,6 +5,7 @@
 PyTorch implementation of **"Concentric Hypersphere Embedding for Pairwise Similarity Learning"** (under review).
 
 [![Paper](https://img.shields.io/badge/Paper-PDF-red?style=flat&logo=arXiv&logoColor=red)](https://arxiv.org/abs/XXXX.XXXXX)
+[![Models](https://img.shields.io/badge/Models-Hugging%20Face-yellow)](https://huggingface.co/YunZhe123/Ripple)
 [![Made with PyTorch](https://img.shields.io/badge/Made%20with-PyTorch-brightgreen)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
