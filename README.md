@@ -66,7 +66,7 @@ Every anchoring form fixes the overall scale of the norms but differs in what it
 <p align="center">
   <img src="assets/ambiguity_demo.gif" width="900">
   <br>
-  <em>Only the probe is blurred; the genuine and impostor references stay clean. As the blur grows the genuine score falls to the impostor level while the norm shrinks, the pair becomes hard to decide instead of wrongly decided.</em>
+  <em>The probe is compared against a genuine and an impostor reference, both left clean. As the blur grows the two scores are traced point by point: the genuine score falls to the impostor level while the norm shrinks, so the pair becomes hard to decide instead of wrongly decided.</em>
 </p>
 
 The same sweep is also an interactive page you can drag through: [`demo/ambiguity_demo.html`](demo/ambiguity_demo.html). Regenerate both for any checkpoint with

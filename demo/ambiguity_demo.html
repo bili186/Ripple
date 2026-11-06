@@ -148,24 +148,25 @@ function drawAxes() {
                                 fill: '#6b7a8d', 'font-size': 12}, 'Gaussian blur sigma (px)'));
 }
 
-function path(values, color, dashed) {
+function pathD(values, upto) {
   let d = '';
-  values.forEach((v, i) => { d += (i ? 'L' : 'M') + xOf(i).toFixed(1) + ' ' + yOf(v).toFixed(1); });
-  const p = el('path', {d: d, fill: 'none', stroke: color, 'stroke-width': 2,
-                        'stroke-linejoin': 'round', 'stroke-linecap': 'round'});
-  if (dashed) p.setAttribute('stroke-dasharray', '6 5');
-  return p;
+  for (let i = 0; i <= upto; i++) {
+    d += (i ? 'L' : 'M') + xOf(i).toFixed(1) + ' ' + yOf(values[i]).toFixed(1);
+  }
+  return d;
 }
 
-const guide = el('line', {x1: 0, x2: 0, y1: PAD.t, y2: H - PAD.b, stroke: '#c3ccd8',
-                          'stroke-width': 1, 'stroke-dasharray': '4 4'});
-const dotGenuine = el('circle', {r: 5, fill: '#fff', stroke: DATA.genuineColor || '#2f6fd0', 'stroke-width': 2.5});
-const dotImpostor = el('circle', {r: 5, fill: '#fff', stroke: DATA.impostorColor || '#d1495b', 'stroke-width': 2.5});
+const pathGenuine = el('path', {d: '', fill: 'none', stroke: '#2f6fd0', 'stroke-width': 2,
+                                'stroke-linejoin': 'round', 'stroke-linecap': 'round'});
+const pathImpostor = el('path', {d: '', fill: 'none', stroke: '#d1495b', 'stroke-width': 2,
+                                 'stroke-linejoin': 'round', 'stroke-linecap': 'round',
+                                 'stroke-dasharray': '6 5'});
+const dotGenuine = el('circle', {r: 5, fill: '#fff', stroke: '#2f6fd0', 'stroke-width': 2.5});
+const dotImpostor = el('circle', {r: 5, fill: '#fff', stroke: '#d1495b', 'stroke-width': 2.5});
 
 function drawSeries() {
-  chart.appendChild(path(DATA.impostor, '#d1495b', true));
-  chart.appendChild(path(DATA.genuine, '#2f6fd0', false));
-  chart.appendChild(guide);
+  chart.appendChild(pathImpostor);
+  chart.appendChild(pathGenuine);
   chart.appendChild(dotGenuine);
   chart.appendChild(dotImpostor);
 }
@@ -187,7 +188,8 @@ function show(i) {
   document.getElementById('bar-impostor').style.width =
       Math.max(2, 100 * (im - lo) / (hi - lo)) + '%';
 
-  guide.setAttribute('x1', xOf(i)); guide.setAttribute('x2', xOf(i));
+  pathGenuine.setAttribute('d', pathD(DATA.genuine, i));
+  pathImpostor.setAttribute('d', pathD(DATA.impostor, i));
   dotGenuine.setAttribute('cx', xOf(i)); dotGenuine.setAttribute('cy', yOf(g));
   dotImpostor.setAttribute('cx', xOf(i)); dotImpostor.setAttribute('cy', yOf(im));
 }

@@ -282,24 +282,25 @@ function drawAxes() {
                                 fill: '#6b7a8d', 'font-size': 12}, 'Gaussian blur sigma (px)'));
 }
 
-function path(values, color, dashed) {
+function pathD(values, upto) {
   let d = '';
-  values.forEach((v, i) => { d += (i ? 'L' : 'M') + xOf(i).toFixed(1) + ' ' + yOf(v).toFixed(1); });
-  const p = el('path', {d: d, fill: 'none', stroke: color, 'stroke-width': 2,
-                        'stroke-linejoin': 'round', 'stroke-linecap': 'round'});
-  if (dashed) p.setAttribute('stroke-dasharray', '6 5');
-  return p;
+  for (let i = 0; i <= upto; i++) {
+    d += (i ? 'L' : 'M') + xOf(i).toFixed(1) + ' ' + yOf(values[i]).toFixed(1);
+  }
+  return d;
 }
 
-const guide = el('line', {x1: 0, x2: 0, y1: PAD.t, y2: H - PAD.b, stroke: '#c3ccd8',
-                          'stroke-width': 1, 'stroke-dasharray': '4 4'});
-const dotGenuine = el('circle', {r: 5, fill: '#fff', stroke: DATA.genuineColor || '#2f6fd0', 'stroke-width': 2.5});
-const dotImpostor = el('circle', {r: 5, fill: '#fff', stroke: DATA.impostorColor || '#d1495b', 'stroke-width': 2.5});
+const pathGenuine = el('path', {d: '', fill: 'none', stroke: '#2f6fd0', 'stroke-width': 2,
+                                'stroke-linejoin': 'round', 'stroke-linecap': 'round'});
+const pathImpostor = el('path', {d: '', fill: 'none', stroke: '#d1495b', 'stroke-width': 2,
+                                 'stroke-linejoin': 'round', 'stroke-linecap': 'round',
+                                 'stroke-dasharray': '6 5'});
+const dotGenuine = el('circle', {r: 5, fill: '#fff', stroke: '#2f6fd0', 'stroke-width': 2.5});
+const dotImpostor = el('circle', {r: 5, fill: '#fff', stroke: '#d1495b', 'stroke-width': 2.5});
 
 function drawSeries() {
-  chart.appendChild(path(DATA.impostor, '#d1495b', true));
-  chart.appendChild(path(DATA.genuine, '#2f6fd0', false));
-  chart.appendChild(guide);
+  chart.appendChild(pathImpostor);
+  chart.appendChild(pathGenuine);
   chart.appendChild(dotGenuine);
   chart.appendChild(dotImpostor);
 }
@@ -321,7 +322,8 @@ function show(i) {
   document.getElementById('bar-impostor').style.width =
       Math.max(2, 100 * (im - lo) / (hi - lo)) + '%';
 
-  guide.setAttribute('x1', xOf(i)); guide.setAttribute('x2', xOf(i));
+  pathGenuine.setAttribute('d', pathD(DATA.genuine, i));
+  pathImpostor.setAttribute('d', pathD(DATA.impostor, i));
   dotGenuine.setAttribute('cx', xOf(i)); dotGenuine.setAttribute('cy', yOf(g));
   dotImpostor.setAttribute('cx', xOf(i)); dotImpostor.setAttribute('cy', yOf(im));
 }
@@ -362,8 +364,13 @@ document.getElementById('note').innerHTML = DATA.note;
 """
 
 
-def render_gif(probes, sigmas, genuine, impostor, norms, out, frames=20, dpi=144):
-    """Draw the sweep as an animation, for places that cannot run JavaScript."""
+def render_gif(probes, sigmas, genuine, impostor, norms, out,
+               ref_genuine=None, ref_impostor=None, frames=20, dpi=144):
+    """Draw the sweep as an animation, for places that cannot run JavaScript.
+
+    The three faces are laid out first and the two score curves are traced
+    point by point as the blur grows, rather than drawn in full up front.
+    """
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -374,21 +381,29 @@ def render_gif(probes, sigmas, genuine, impostor, norms, out, frames=20, dpi=144
 
     images = []
     for i in picks:
-        fig, (ax_img, ax_plot) = plt.subplots(
-            1, 2, figsize=(8.2, 3.3), dpi=dpi, gridspec_kw={'width_ratios': [1, 2.1]})
-        ax_img.imshow(probes[i])
-        ax_img.axis('off')
-        ax_img.set_title(f'probe   sigma = {sigmas[i]:.1f}', fontsize=10)
-        ax_img.text(0.5, -0.04, f'‖f‖ = {norms[i]:.2f}', transform=ax_img.transAxes,
-                    ha='center', va='top', fontsize=9, color='#6b7a8d')
+        fig = plt.figure(figsize=(8.4, 5.4), dpi=dpi)
+        gs = fig.add_gridspec(2, 3, height_ratios=[1, 1.18], hspace=0.34, wspace=0.14)
 
-        ax_plot.plot(sigmas, impostor, color='#d1495b', lw=1.6, ls='--', label='impostor')
-        ax_plot.plot(sigmas, genuine, color='#2f6fd0', lw=1.9, label='genuine')
+        for col, (img, title) in enumerate([
+                (probes[i], f'probe   \u03c3 = {sigmas[i]:.1f}'),
+                (ref_genuine, 'genuine (clean)'),
+                (ref_impostor, 'impostor (clean)')]):
+            ax = fig.add_subplot(gs[0, col])
+            ax.imshow(img)
+            ax.axis('off')
+            ax.set_title(title, fontsize=10)
+        fig.axes[0].text(0.5, -0.03, f'‖f‖ = {norms[i]:.2f}', transform=fig.axes[0].transAxes,
+                         ha='center', va='top', fontsize=9, color='#6b7a8d')
+
+        ax_plot = fig.add_subplot(gs[1, :])
+        ax_plot.plot(sigmas[:i + 1], impostor[:i + 1], color='#d1495b', lw=1.6, ls='--',
+                     label='vs impostor')
+        ax_plot.plot(sigmas[:i + 1], genuine[:i + 1], color='#2f6fd0', lw=1.9,
+                     label='vs genuine')
         ax_plot.plot([sigmas[i]], [impostor[i]], 'o', ms=6, mfc='white',
                      mec='#d1495b', mew=1.8)
         ax_plot.plot([sigmas[i]], [genuine[i]], 'o', ms=6, mfc='white',
                      mec='#2f6fd0', mew=1.8)
-        ax_plot.axvline(sigmas[i], color='#c3ccd8', lw=0.9, ls=':')
         ax_plot.set_xlim(sigmas[0], sigmas[-1])
         ax_plot.set_ylim(y_lo, y_hi)
         ax_plot.set_xlabel('Gaussian blur sigma (px)', fontsize=9)
@@ -399,7 +414,7 @@ def render_gif(probes, sigmas, genuine, impostor, norms, out, frames=20, dpi=144
         ax_plot.grid(axis='y', color='#eef2f7')
         ax_plot.legend(fontsize=8, frameon=False, loc='upper right')
         ax_plot.set_title(
-            f'vs genuine {genuine[i]:.1f}   |   vs impostor {impostor[i]:.1f}',
+            f'genuine {genuine[i]:.1f}   |   impostor {impostor[i]:.1f}',
             fontsize=9.5, color='#16202c')
         fig.tight_layout()
 
@@ -462,7 +477,8 @@ def main():
     print(f'wrote {args.out}')
     if args.gif:
         os.makedirs(osp.dirname(osp.abspath(args.gif)), exist_ok=True)
-        render_gif(probes, sigmas, genuine_scores, impostor_scores, norms, args.gif)
+        render_gif(probes, sigmas, genuine_scores, impostor_scores, norms, args.gif,
+                   ref_genuine=images['genuine'], ref_impostor=images['impostor'])
     print(f'sigma 0 -> {sigmas[-1]:.1f}')
     print(f'genuine   {genuine_scores[0]:8.2f} -> {genuine_scores[-1]:8.2f}')
     print(f'impostor  {impostor_scores[0]:8.2f} -> {impostor_scores[-1]:8.2f}')
