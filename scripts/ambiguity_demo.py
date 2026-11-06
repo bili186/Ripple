@@ -354,7 +354,7 @@ playBtn.addEventListener('click', () => {
   timer = setInterval(() => {
     i = (i + 1) % n;
     slider.value = i; show(i);
-  }, 90);
+  }, 240);
   show(parseInt(slider.value, 10));
 });
 
@@ -368,12 +368,14 @@ document.getElementById('note').innerHTML = DATA.note;
 
 def stylized_curves(n):
     """Trend shape of the concept figure: the genuine score falls monotonically,
-    the impostor score dips once and ends just above the genuine one."""
+    the impostor score dips once, then the two converge and cross while wobbling."""
     t = np.linspace(0.0, 1.0, n)
-    genuine = -20.0 + 82.0 / (1.0 + np.exp((t - 0.42) / 0.10))
-    impostor = -22.0 - 6.5 * np.exp(-((t - 0.42) / 0.20) ** 2) + 2.35 * t ** 1.4
-    tail = np.clip((t - 0.80) / 0.20, 0.0, 1.0)
-    impostor = impostor + 0.35 * np.sin(np.pi * tail) * np.sin(8.0 * np.pi * tail)
+    genuine = -17.8 + 83.0 / (1.0 + np.exp((t - 0.36) / 0.09))
+
+    dip = -21.5 - 6.5 * np.exp(-((t - 0.40) / 0.20) ** 2) + 2.6 * t ** 2
+    w = np.clip((t - 0.62) / 0.38, 0.0, 1.0)
+    impostor = (1.0 - w) * dip + w * (genuine + 0.1)
+    impostor = impostor + 1.0 * np.sin(np.pi * w) * np.sin(9.0 * np.pi * w)
     return genuine, impostor
 
 
@@ -438,7 +440,7 @@ def render_gif(probes, sigmas, genuine, impostor, norms, out,
         images.append(Image.open(buf).convert('RGB'))
 
     images[0].save(out, save_all=True, append_images=images[1:],
-                   duration=130, loop=0, optimize=True)
+                   duration=320, loop=0, optimize=True)
     print(f'wrote {out}')
 
 
