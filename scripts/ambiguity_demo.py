@@ -188,9 +188,9 @@ HTML_TEMPLATE = """<!doctype html>
 <body>
 <main>
   <h1>How much evidence survives degradation</h1>
-  <p class="lede">Drag the slider to blur the probe. Its score against the same person falls
-  faster and further than its score against a different person, so the two become hard to tell
-  apart, the feature ambiguity dilemma. Watch the magnitude instead: it shrinks with the blur.</p>
+  <p class="lede">Drag the slider: the probe and its genuine reference are blurred together,
+  while the impostor reference stays sharp. Both score curves are traced as the blur grows,
+  and the magnitude under the probe shows how much evidence the embedding still carries.</p>
 
   <section class="board">
     <figure class="card">
@@ -202,14 +202,14 @@ HTML_TEMPLATE = """<!doctype html>
     <figure class="card">
       <img id="img-genuine" alt="genuine reference">
       <figcaption><span class="tag" style="color:var(--genuine)">genuine</span>
-        <span class="who">same person, clean</span>
-        <span>fixed reference</span></figcaption>
+        <span class="who">same person, blurred</span>
+        <span>same blur level</span></figcaption>
     </figure>
     <figure class="card">
       <img id="img-impostor" alt="impostor reference">
       <figcaption><span class="tag" style="color:var(--impostor)">impostor</span>
-        <span class="who">different person, clean</span>
-        <span>fixed reference</span></figcaption>
+        <span class="who">different person</span>
+        <span>never blurred</span></figcaption>
     </figure>
   </section>
 
@@ -310,6 +310,7 @@ function show(i) {
   if (i === showing) return;
   showing = i;
   document.getElementById('img-probe').src = DATA.probe[i];
+  document.getElementById('img-genuine').src = DATA.refGenuine[i];
   document.getElementById('sigma-out').textContent = DATA.sigmas[i].toFixed(1);
   document.getElementById('norm').textContent = '\u2016f\u2016 = ' + DATA.norms[i].toFixed(2);
 
@@ -328,9 +329,7 @@ function show(i) {
   dotImpostor.setAttribute('cx', xOf(i)); dotImpostor.setAttribute('cy', yOf(im));
 }
 
-document.getElementById('img-genuine').src = DATA.refGenuine;
 document.getElementById('img-impostor').src = DATA.refImpostor;
-document.getElementById('img-probe').src = DATA.probe[0];
 
 drawAxes();
 drawSeries();
@@ -386,8 +385,8 @@ def render_gif(probes, sigmas, genuine, impostor, norms, out,
 
         for col, (img, title) in enumerate([
                 (probes[i], f'probe   \u03c3 = {sigmas[i]:.1f}'),
-                (ref_genuine, 'genuine (clean)'),
-                (ref_impostor, 'impostor (clean)')]):
+                (ref_genuine[i], f'genuine   \u03c3 = {sigmas[i]:.1f}'),
+                (ref_impostor, 'impostor')]):
             ax = fig.add_subplot(gs[0, col])
             ax.imshow(img)
             ax.axis('off')
@@ -440,17 +439,23 @@ def main():
         save_crop(img, args.aligned_dir, name)
         images[name] = img
 
-    ref_genuine = embed(backbone, head, images['genuine'], args.device)
     ref_impostor = embed(backbone, head, images['impostor'], args.device)
 
+    # both faces of the genuine pair are degraded together, the impostor
+    # reference stays clean
     sigmas = np.linspace(0, args.sigma_max, args.steps)
-    probe_png, probes, genuine_scores, impostor_scores, norms = [], [], [], [], []
+    probe_png, probes, genuine_png, genuine_imgs = [], [], [], []
+    genuine_scores, impostor_scores, norms = [], [], []
     for sigma in sigmas:
         blurred = images['probe'].filter(ImageFilter.GaussianBlur(float(sigma)))
+        blurred_genuine = images['genuine'].filter(ImageFilter.GaussianBlur(float(sigma)))
         feat = embed(backbone, head, blurred, args.device)
+        feat_genuine = embed(backbone, head, blurred_genuine, args.device)
         probes.append(blurred)
         probe_png.append(encode(blurred))
-        genuine_scores.append(score(head, feat, ref_genuine))
+        genuine_imgs.append(blurred_genuine)
+        genuine_png.append(encode(blurred_genuine))
+        genuine_scores.append(score(head, feat, feat_genuine))
         impostor_scores.append(score(head, feat, ref_impostor))
         norms.append(float(torch.norm(feat).item()))
 
@@ -460,12 +465,13 @@ def main():
         'impostor': [round(s, 4) for s in impostor_scores],
         'norms': [round(v, 3) for v in norms],
         'probe': probe_png,
-        'refGenuine': encode(images['genuine']),
+        'refGenuine': genuine_png,
         'refImpostor': encode(images['impostor']),
         'note': ('Scores are <b>&#10216;f<sub>1</sub>, f<sub>2</sub>&#10217; '
                  '&minus; b<sub>&theta;</sub>&#8214;f<sub>1</sub>&#8214;&#8214;f<sub>2</sub>&#8214, '
                  'b<sub>&theta;</sub> = 0.3, with the feature averaged over the image and its '
-                 'mirror. The two references stay clean while only the probe is blurred.'),
+                 'mirror. Both faces of the genuine pair carry the same blur, only one face of '
+                 'the impostor pair does.'),
     }
 
     html = HTML_TEMPLATE.replace('__DATA__', json.dumps(data))
@@ -478,7 +484,7 @@ def main():
     if args.gif:
         os.makedirs(osp.dirname(osp.abspath(args.gif)), exist_ok=True)
         render_gif(probes, sigmas, genuine_scores, impostor_scores, norms, args.gif,
-                   ref_genuine=images['genuine'], ref_impostor=images['impostor'])
+                   ref_genuine=genuine_imgs, ref_impostor=images['impostor'])
     print(f'sigma 0 -> {sigmas[-1]:.1f}')
     print(f'genuine   {genuine_scores[0]:8.2f} -> {genuine_scores[-1]:8.2f}')
     print(f'impostor  {impostor_scores[0]:8.2f} -> {impostor_scores[-1]:8.2f}')
