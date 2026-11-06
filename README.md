@@ -61,6 +61,16 @@ Every anchoring form fixes the overall scale of the norms but differs in what it
 | RipPLE-P | 44.63 | 92.19 | 95.37 | 90.19 | 94.93 | 96.67 | 95.05 / 96.34 | 85.29 / 93.29 |
 | RipPLE-GM | 38.76 | 92.01 | 95.20 | 90.75 | 94.78 | 96.58 | 95.27 / 96.58 | 87.32 / 93.30 |
 
+## Demo
+
+[`demo/ambiguity_demo.html`](demo/ambiguity_demo.html) is a self-contained page: drag the blur slider and the probe face degrades while its scores against the same person and against a different person update on the plot. Regenerate it for any checkpoint with
+
+```console
+python scripts/ambiguity_demo.py --proj_dir project/ripple/<timestamp> \
+    --probe demo/images/probe.jpg --genuine demo/images/genuine.jpg \
+    --impostor demo/images/impostor.jpg --out demo/ambiguity_demo.html
+```
+
 ## Setup
 
 ```console
