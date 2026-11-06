@@ -64,7 +64,7 @@ Every anchoring form fixes the overall scale of the norms but differs in what it
 ## Demo
 
 <p align="center">
-  <img src="assets/ambiguity_demo.gif" width="900">
+  <img src="assets/ambiguity_demo.gif?v=20261106" width="900">
   <br>
   <em>Both faces of the genuine pair are blurred together, the impostor reference is never blurred. The scores are traced point by point as the blur grows: the genuine score falls from +60 toward the impostor level, and at the heaviest blur the two cross, leaving the pair hard to decide. Curves follow the trend of the concept figure.</em>
 </p>
