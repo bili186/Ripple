@@ -63,12 +63,19 @@ Every anchoring form fixes the overall scale of the norms but differs in what it
 
 ## Demo
 
-[`demo/ambiguity_demo.html`](demo/ambiguity_demo.html) is a self-contained page: drag the blur slider and the probe face degrades while its scores against the same person and against a different person update on the plot. Regenerate it for any checkpoint with
+<p align="center">
+  <img src="assets/ambiguity_demo.gif" width="900">
+  <br>
+  <em>Only the probe is blurred; the genuine and impostor references stay clean. As the blur grows the genuine score falls to the impostor level while the norm shrinks, the pair becomes hard to decide instead of wrongly decided.</em>
+</p>
+
+The same sweep is also an interactive page you can drag through: [`demo/ambiguity_demo.html`](demo/ambiguity_demo.html). Regenerate both for any checkpoint with
 
 ```console
 python scripts/ambiguity_demo.py --proj_dir project/ripple/<timestamp> \
     --probe demo/images/probe.jpg --genuine demo/images/genuine.jpg \
-    --impostor demo/images/impostor.jpg --out demo/ambiguity_demo.html
+    --impostor demo/images/impostor.jpg --out demo/ambiguity_demo.html \
+    --gif assets/ambiguity_demo.gif
 ```
 
 ## Setup

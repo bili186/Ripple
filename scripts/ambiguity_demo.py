@@ -56,6 +56,8 @@ def parse_args():
                         help='number of blur levels, slider positions')
     parser.add_argument('--out', default='demo/ambiguity_demo.html',
                         help='output HTML page')
+    parser.add_argument('--gif', default=None,
+                        help='optional animated GIF, plays the same sweep without a browser')
     parser.add_argument('--aligned_dir', default='demo/images',
                         help='where the aligned 112x112 crops are written')
     parser.add_argument('--device', default='cpu')
@@ -360,6 +362,58 @@ document.getElementById('note').innerHTML = DATA.note;
 """
 
 
+def render_gif(probes, sigmas, genuine, impostor, norms, out, frames=20, dpi=144):
+    """Draw the sweep as an animation, for places that cannot run JavaScript."""
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+
+    picks = np.unique(np.linspace(0, len(sigmas) - 1, frames).round().astype(int))
+    y_lo = min(min(genuine), min(impostor)) - 3
+    y_hi = max(max(genuine), max(impostor)) + 3
+
+    images = []
+    for i in picks:
+        fig, (ax_img, ax_plot) = plt.subplots(
+            1, 2, figsize=(8.2, 3.3), dpi=dpi, gridspec_kw={'width_ratios': [1, 2.1]})
+        ax_img.imshow(probes[i])
+        ax_img.axis('off')
+        ax_img.set_title(f'probe   sigma = {sigmas[i]:.1f}', fontsize=10)
+        ax_img.text(0.5, -0.04, f'‖f‖ = {norms[i]:.2f}', transform=ax_img.transAxes,
+                    ha='center', va='top', fontsize=9, color='#6b7a8d')
+
+        ax_plot.plot(sigmas, impostor, color='#d1495b', lw=1.6, ls='--', label='impostor')
+        ax_plot.plot(sigmas, genuine, color='#2f6fd0', lw=1.9, label='genuine')
+        ax_plot.plot([sigmas[i]], [impostor[i]], 'o', ms=6, mfc='white',
+                     mec='#d1495b', mew=1.8)
+        ax_plot.plot([sigmas[i]], [genuine[i]], 'o', ms=6, mfc='white',
+                     mec='#2f6fd0', mew=1.8)
+        ax_plot.axvline(sigmas[i], color='#c3ccd8', lw=0.9, ls=':')
+        ax_plot.set_xlim(sigmas[0], sigmas[-1])
+        ax_plot.set_ylim(y_lo, y_hi)
+        ax_plot.set_xlabel('Gaussian blur sigma (px)', fontsize=9)
+        ax_plot.set_ylabel('score', fontsize=9)
+        ax_plot.tick_params(labelsize=8)
+        for side in ('top', 'right'):
+            ax_plot.spines[side].set_visible(False)
+        ax_plot.grid(axis='y', color='#eef2f7')
+        ax_plot.legend(fontsize=8, frameon=False, loc='upper right')
+        ax_plot.set_title(
+            f'vs genuine {genuine[i]:.1f}   |   vs impostor {impostor[i]:.1f}',
+            fontsize=9.5, color='#16202c')
+        fig.tight_layout()
+
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png')
+        plt.close(fig)
+        buf.seek(0)
+        images.append(Image.open(buf).convert('RGB'))
+
+    images[0].save(out, save_all=True, append_images=images[1:],
+                   duration=130, loop=0, optimize=True)
+    print(f'wrote {out}')
+
+
 def main():
     args = parse_args()
     config, model_path = load_config(args)
@@ -375,10 +429,11 @@ def main():
     ref_impostor = embed(backbone, head, images['impostor'], args.device)
 
     sigmas = np.linspace(0, args.sigma_max, args.steps)
-    probe_png, genuine_scores, impostor_scores, norms = [], [], [], []
+    probe_png, probes, genuine_scores, impostor_scores, norms = [], [], [], [], []
     for sigma in sigmas:
         blurred = images['probe'].filter(ImageFilter.GaussianBlur(float(sigma)))
         feat = embed(backbone, head, blurred, args.device)
+        probes.append(blurred)
         probe_png.append(encode(blurred))
         genuine_scores.append(score(head, feat, ref_genuine))
         impostor_scores.append(score(head, feat, ref_impostor))
@@ -405,6 +460,9 @@ def main():
         f.write(html)
 
     print(f'wrote {args.out}')
+    if args.gif:
+        os.makedirs(osp.dirname(osp.abspath(args.gif)), exist_ok=True)
+        render_gif(probes, sigmas, genuine_scores, impostor_scores, norms, args.gif)
     print(f'sigma 0 -> {sigmas[-1]:.1f}')
     print(f'genuine   {genuine_scores[0]:8.2f} -> {genuine_scores[-1]:8.2f}')
     print(f'impostor  {impostor_scores[0]:8.2f} -> {impostor_scores[-1]:8.2f}')
