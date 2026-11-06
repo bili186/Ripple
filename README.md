@@ -1,9 +1,12 @@
-<p align="center"><img src="assets/ripple_logo.png" width="600"></p>
+<p align="center"><a href="https://bili186.github.io/Ripple/"><img src="assets/ripple_logo.png" width="600" alt="RipPLE project page"></a></p>
+
+<p align="center"><a href="https://bili186.github.io/Ripple/"><b>Project Page</b></a> &nbsp;·&nbsp; <a href="https://huggingface.co/YunZhe123/Ripple">Models</a> &nbsp;·&nbsp; <a href="demo/ambiguity_demo.html">Interactive Demo</a></p>
 
 # RipPLE: Concentric Hypersphere Embedding for Pairwise Similarity Learning
 
 PyTorch implementation of **"Concentric Hypersphere Embedding for Pairwise Similarity Learning"** (under review).
 
+[![Project Page](https://img.shields.io/badge/Project-Page-2f6fd0?style=flat)](https://bili186.github.io/Ripple/)
 [![Paper](https://img.shields.io/badge/Paper-PDF-red?style=flat&logo=arXiv&logoColor=red)](https://arxiv.org/abs/XXXX.XXXXX)
 [![Models](https://img.shields.io/badge/Models-Hugging%20Face-yellow)](https://huggingface.co/YunZhe123/Ripple)
 [![Made with PyTorch](https://img.shields.io/badge/Made%20with-PyTorch-brightgreen)](https://pytorch.org/)
