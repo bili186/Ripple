@@ -4,185 +4,283 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RipPLE &middot; Concentric Hypersphere Embedding</title>
-<meta name="description" content="RipPLE: pairwise similarity learning with concentric hypersphere embeddings. Direction encodes identity, norm carries evidence.">
+<meta name="description" content="RipPLE keeps the embedding norm: the direction encodes identity, the norm carries evidence, and one constraint on the mean norm keeps training stable.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="RipPLE &middot; Concentric Hypersphere Embedding for Pairwise Similarity Learning">
+<meta property="og:description" content="Direction encodes identity, norm carries evidence. Code, pretrained models and an interactive demo.">
+<meta property="og:image" content="https://bili186.github.io/Ripple/assets/ripple_concept.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fbfcfe">
+<link rel="icon" href="assets/ripple_logo.svg" type="image/svg+xml">
 <style>
   :root {
-    --ink: #16202c; --muted: #6b7a8d; --line: #e3e8ef;
-    --blue: #2f6fd0; --red: #d1495b; --page: #f7f9fc; --panel: #ffffff;
+    --ink: #10161f; --muted: #5b6b7c; --faint: #8c9aab;
+    --line: #e5e9f0; --line-strong: #d3dae4;
+    --accent: #2f6fd0; --accent-soft: #eaf1fb;
+    --bg: #fbfcfe; --panel: #ffffff; --panel-muted: #f5f7fa;
+    --shadow: 0 1px 2px rgba(16, 22, 31, .04);
+    --max: 1080px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #e6edf5; --muted: #9aa9ba; --faint: #748394;
+      --line: #1e2836; --line-strong: #2a3646;
+      --accent: #6ea8fe; --accent-soft: #16233a;
+      --bg: #0c1117; --panel: #121922; --panel-muted: #0f161e;
+      --shadow: none;
+    }
+    .shot img { opacity: .92; }
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
   body {
-    margin: 0; background: var(--page); color: var(--ink);
-    font: 16px/1.65 -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
-  a { color: var(--blue); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 28px; }
+  .mono { font-variant-numeric: tabular-nums; }
 
-  nav.top {
-    position: sticky; top: 0; z-index: 10; background: rgba(247, 249, 252, .86);
-    backdrop-filter: saturate(180%) blur(12px); border-bottom: 1px solid var(--line);
+  /* ---------- nav ---------- */
+  .nav {
+    position: sticky; top: 0; z-index: 20;
+    background: var(--bg);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: saturate(160%) blur(10px);
+    border-bottom: 1px solid var(--line);
   }
-  nav.top .wrap { display: flex; align-items: center; gap: 14px; height: 58px; }
-  nav.top img { height: 24px; display: block; }
-  nav.top .links { margin-left: auto; display: flex; gap: 22px; font-size: 14px; }
-  nav.top .links a { color: var(--muted); }
-  nav.top .links a:hover { color: var(--ink); text-decoration: none; }
+  .nav .wrap { display: flex; align-items: center; gap: 16px; height: 60px; }
+  .nav .brand { display: flex; align-items: center; gap: 10px; font-weight: 640; letter-spacing: -.01em; }
+  .nav .brand img { height: 26px; display: block; }
+  .nav .links { margin-left: auto; display: flex; align-items: center; gap: 26px; font-size: 14px; }
+  .nav .links a { color: var(--muted); transition: color .15s; }
+  .nav .links a:hover { color: var(--ink); }
+  .nav .cta {
+    color: var(--ink); border: 1px solid var(--line-strong); border-radius: 8px;
+    padding: 7px 14px; font-size: 13.5px; transition: border-color .15s, background .15s;
+  }
+  .nav .cta:hover { border-color: var(--accent); color: var(--accent); }
 
-  header.hero { padding: 84px 0 56px; }
+  /* ---------- hero ---------- */
+  .hero { padding: 96px 0 76px; border-bottom: 1px solid var(--line); }
   .eyebrow {
-    font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint);
+  }
+  .eyebrow::before {
+    content: ""; width: 18px; height: 1px; background: var(--accent); display: block;
   }
   h1 {
-    font-size: 42px; line-height: 1.2; letter-spacing: -.02em; font-weight: 680;
-    margin: 14px 0 18px; max-width: 880px;
+    margin: 20px 0 20px; font-size: clamp(32px, 4.6vw, 50px); line-height: 1.16;
+    letter-spacing: -.025em; font-weight: 680; max-width: 900px;
   }
-  h1 em { font-style: normal; color: var(--blue); }
-  .lede { max-width: 780px; color: var(--muted); font-size: 17px; margin: 0 0 30px; }
+  h1 span { color: var(--accent); }
+  .lede { margin: 0 0 34px; max-width: 720px; color: var(--muted); font-size: 17px; line-height: 1.75; }
   .actions { display: flex; flex-wrap: wrap; gap: 12px; }
   .btn {
-    display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 9px;
-    border: 1px solid var(--line); background: var(--panel); color: var(--ink); font-size: 14.5px;
-    transition: border-color .15s, transform .15s;
+    display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 20px;
+    border: 1px solid var(--line-strong); border-radius: 9px; background: var(--panel);
+    font-size: 14.5px; color: var(--ink); box-shadow: var(--shadow);
+    transition: border-color .15s, transform .15s, background .15s;
   }
-  .btn:hover { border-color: #c3cfdd; transform: translateY(-1px); text-decoration: none; }
-  .btn.primary { background: var(--ink); border-color: var(--ink); color: #fff; }
-  .btn.primary:hover { background: #24303f; }
-  .btn small { color: inherit; opacity: .6; font-size: 12px; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+  .btn.solid { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .btn.solid:hover { background: #24303f; border-color: #24303f; color: #fff; }
+  .btn .arrow { font-size: 12px; opacity: .55; }
 
-  section { padding: 40px 0; }
-  section + section { border-top: 1px solid var(--line); }
-  h2 { font-size: 20px; font-weight: 650; letter-spacing: -.01em; margin: 0 0 6px; }
-  .sub { color: var(--muted); margin: 0 0 26px; font-size: 15px; max-width: 760px; }
+  .facts { display: flex; flex-wrap: wrap; gap: 40px; margin-top: 44px; }
+  .fact .v { font-size: 26px; font-weight: 680; letter-spacing: -.02em; }
+  .fact .k { font-size: 12.5px; color: var(--faint); letter-spacing: .04em; text-transform: uppercase; }
 
-  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  /* ---------- sections ---------- */
+  section { padding: 76px 0; border-bottom: 1px solid var(--line); }
+  .head { margin-bottom: 36px; }
+  .head .label { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+  .head h2 { margin: 10px 0 8px; font-size: 26px; letter-spacing: -.015em; font-weight: 660; }
+  .head p { margin: 0; max-width: 680px; color: var(--muted); font-size: 15.5px; }
+
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
   .card {
-    background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 26px 24px; box-shadow: var(--shadow);
+    transition: border-color .18s, transform .18s;
   }
-  .card h3 { margin: 0 0 8px; font-size: 15.5px; font-weight: 640; }
-  .card p { margin: 0; font-size: 14px; color: var(--muted); }
+  .card:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+  .card .n { font-size: 12px; color: var(--faint); letter-spacing: .1em; }
+  .card h3 { margin: 14px 0 10px; font-size: 16.5px; font-weight: 640; letter-spacing: -.01em; }
+  .card p { margin: 0; font-size: 14.5px; line-height: 1.75; color: var(--muted); }
 
-  figure { margin: 26px 0 0; }
-  figure img { width: 100%; display: block; border-radius: 12px; border: 1px solid var(--line); }
-  figcaption { margin-top: 10px; font-size: 13.5px; color: var(--muted); }
+  .figure {
+    margin: 44px 0 0; background: var(--panel-muted); border: 1px solid var(--line);
+    border-radius: 12px; padding: 18px;
+  }
+  .figure img { width: 100%; display: block; border-radius: 8px; }
+  .figure figcaption { margin: 16px 4px 2px; font-size: 13.5px; line-height: 1.75; color: var(--muted); }
 
-  .demo { display: grid; grid-template-columns: 1.4fr 1fr; gap: 26px; align-items: center; }
-  .demo img { width: 100%; border-radius: 12px; border: 1px solid var(--line); display: block; }
-  .demo h2 { margin-bottom: 10px; }
-  .demo p { color: var(--muted); font-size: 14.5px; margin: 0 0 18px; }
+  .demo { display: grid; grid-template-columns: 1.45fr 1fr; gap: 44px; align-items: center; }
+  .shot {
+    border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
+    background: var(--panel); box-shadow: var(--shadow);
+  }
+  .shot .bar {
+    display: flex; gap: 6px; align-items: center; padding: 10px 14px;
+    border-bottom: 1px solid var(--line); background: var(--panel-muted);
+  }
+  .shot .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line-strong); }
+  .shot .name { margin-left: 8px; font-size: 12px; color: var(--faint); letter-spacing: .02em; }
+  .shot img { width: 100%; display: block; }
+  .demo .head { margin-bottom: 20px; }
+  .demo .btn { margin-top: 22px; }
 
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th, td { padding: 10px 8px; text-align: center; border-bottom: 1px solid var(--line); }
-  th:first-child, td:first-child { text-align: left; }
-  thead th { color: var(--muted); font-weight: 600; font-size: 12.5px; }
-  tbody tr.hl td { font-weight: 620; background: #f2f6fd; }
-  tbody tr.hl td:first-child { border-radius: 8px 0 0 8px; }
-  tbody tr.hl td:last-child { border-radius: 0 8px 8px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  thead th {
+    text-align: right; font-weight: 560; font-size: 12px; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--faint); padding: 0 12px 12px;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  thead th:first-child { text-align: left; }
+  tbody td { padding: 14px 12px; text-align: right; border-bottom: 1px solid var(--line); }
+  tbody td:first-child { text-align: left; font-weight: 560; }
+  tbody tr.best td { background: var(--accent-soft); }
+  tbody tr.best td:first-child { color: var(--accent); }
+  tbody tr.best td:first-child::after { content: " \2190 ours"; font-size: 11px; letter-spacing: .06em; }
+  .table-note { margin: 18px 0 0; font-size: 13px; color: var(--faint); }
 
-  footer { padding: 36px 0 60px; color: var(--muted); font-size: 14px; }
-  footer .row { display: flex; flex-wrap: wrap; gap: 18px; }
-  footer .row a { color: var(--muted); }
+  footer { padding: 44px 0 72px; }
+  footer .row { display: flex; flex-wrap: wrap; align-items: center; gap: 26px; font-size: 14px; }
+  footer a { color: var(--muted); transition: color .15s; }
+  footer a:hover { color: var(--accent); }
+  footer .spacer { margin-left: auto; color: var(--faint); font-size: 13px; }
 
-  @media (max-width: 820px) {
-    header.hero { padding: 56px 0 40px; }
-    h1 { font-size: 30px; }
-    .cards, .demo { grid-template-columns: 1fr; }
-    nav.top .links { gap: 14px; font-size: 13px; }
-    nav.top .links a.hide-sm { display: none; }
-    table { font-size: 12.5px; }
+  .reveal { opacity: 0; transform: translateY(10px); }
+  .reveal.in { opacity: 1; transform: none; transition: opacity .5s ease, transform .5s ease; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; }
+    .btn:hover, .card:hover { transform: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  @media (max-width: 900px) {
+    .nav .links a.hide-sm { display: none; }
+    .demo { grid-template-columns: 1fr; gap: 28px; }
+    .grid3 { grid-template-columns: 1fr; }
+    section { padding: 56px 0; }
+    .hero { padding: 64px 0 56px; }
+    .facts { gap: 28px; }
+    thead th, tbody td { padding-left: 6px; padding-right: 6px; }
   }
 </style>
 </head>
 <body>
 
-<nav class="top">
+<nav class="nav">
   <div class="wrap">
-    <img src="assets/ripple_logo.png" alt="RipPLE">
+    <a class="brand" href="#top"><img src="assets/ripple_logo.png" alt="RipPLE"></a>
     <div class="links">
       <a href="#method">Method</a>
       <a href="#demo">Demo</a>
       <a href="#results">Results</a>
-      <a class="hide-sm" href="https://github.com/bili186/Ripple">GitHub</a>
+      <a class="hide-sm" href="https://github.com/bili186/Ripple">Code</a>
       <a class="hide-sm" href="https://huggingface.co/YunZhe123/Ripple">Models</a>
+      <a class="cta" href="https://github.com/bili186/Ripple">GitHub</a>
     </div>
   </div>
 </nav>
 
-<header class="hero">
+<header class="hero" id="top">
   <div class="wrap">
     <div class="eyebrow">Research project &middot; under review</div>
-    <h1>Concentric Hypersphere Embedding for <em>Pairwise Similarity Learning</em></h1>
-    <p class="lede">Face embeddings are usually normalized onto a hypersphere, so an angular score says
-      how alike two faces look but not how much evidence supports it. RipPLE keeps the norm: the direction
-      encodes identity, the norm carries evidence, and a single constraint on the mean norm keeps training stable.</p>
+    <h1>Concentric Hypersphere Embedding for <span>Pairwise Similarity Learning</span></h1>
+    <p class="lede">An angular score tells how alike two faces look, not how much evidence supports it.
+      RipPLE keeps the norm: direction encodes identity, the norm carries evidence, and one constraint on
+      the mean norm keeps the loss temperature in a workable range.</p>
     <div class="actions">
-      <a class="btn primary" href="https://github.com/bili186/Ripple">GitHub Repository <small>&#8599;</small></a>
-      <a class="btn" href="https://huggingface.co/YunZhe123/Ripple">Hugging Face Models <small>&#8599;</small></a>
-      <a class="btn" href="demo/ambiguity_demo.html">Interactive Demo</a>
-      <a class="btn" href="#demo">Watch the sweep</a>
+      <a class="btn solid" href="https://github.com/bili186/Ripple">Code <span class="arrow">&#8599;</span></a>
+      <a class="btn" href="https://huggingface.co/YunZhe123/Ripple">Pretrained models <span class="arrow">&#8599;</span></a>
+      <a class="btn" href="demo/ambiguity_demo.html">Open the demo</a>
+    </div>
+    <div class="facts">
+      <div class="fact"><div class="v mono">95.50</div><div class="k">IJB-B TAR@1e-4</div></div>
+      <div class="fact"><div class="v mono">96.82</div><div class="k">IJB-C TAR@1e-4</div></div>
+      <div class="fact"><div class="v mono">3</div><div class="k">Anchoring forms</div></div>
     </div>
   </div>
 </header>
 
 <section id="method">
   <div class="wrap">
-    <h2>One embedding, two quantities</h2>
-    <p class="sub">Standard practice fixes every norm to one, which discards how informative each image is.
-      RipPLE lets the pairwise loss decide it, while a single anchor keeps the loss temperature in a workable range.</p>
-    <div class="cards">
-      <div class="card">
-        <h3>Direction &mdash; identity</h3>
-        <p>The unit vector still does the discriminating, so the geometry of the recognition problem is unchanged.</p>
+    <div class="head reveal">
+      <div class="label">Method</div>
+      <h2>One embedding, two quantities</h2>
+      <p>Standard practice fixes every norm to one, discarding how informative each image is.
+        RipPLE lets the pairwise loss decide it instead.</p>
+    </div>
+    <div class="grid3">
+      <div class="card reveal">
+        <div class="n">01</div>
+        <h3>Direction is identity</h3>
+        <p>The unit vector still separates identities, so the geometry of the recognition problem is unchanged.</p>
       </div>
-      <div class="card">
-        <h3>Norm &mdash; evidence</h3>
-        <p>A clear face grows a long vector, an occluded or blurred one shrinks. The score follows, so an
-          uncertain pair scores near zero instead of looking like a confident impostor.</p>
+      <div class="card reveal">
+        <div class="n">02</div>
+        <h3>Norm is evidence</h3>
+        <p>A clear face grows a long vector, an occluded or blurred one shrinks. An uncertain pair then
+          scores near zero instead of looking like a confident impostor.</p>
       </div>
-      <div class="card">
-        <h3>ENC &mdash; one anchor</h3>
-        <p>Only the mean norm is anchored per batch; every individual norm stays free, which is what separates
+      <div class="card reveal">
+        <div class="n">03</div>
+        <h3>ENC anchors the mean</h3>
+        <p>Only the batch mean is anchored; each individual norm stays free. This is what separates
           RipPLE from a fixed-norm baseline.</p>
       </div>
     </div>
-    <figure>
-      <img src="assets/ripple_concept.png" alt="Under degradation the two score distributions converge toward zero">
+    <figure class="figure reveal">
+      <img src="assets/ripple_concept.png" alt="Under degradation, the genuine and impostor score distributions converge toward zero">
       <figcaption>Under occlusion, pose and blur, degraded faces move closer across identities while a degraded
-        face moves away from its clean images. RipPLE encodes how much evidence each input provides in the norm,
-        so both distributions converge toward zero and a degraded pair reads as hard to decide rather than
-        wrongly decided.</figcaption>
+        face moves away from its clean images. The norm records how much evidence each input provides, so both
+        distributions converge toward zero and a degraded pair reads as hard to decide rather than wrongly decided.</figcaption>
     </figure>
   </div>
 </section>
 
 <section id="demo">
   <div class="wrap demo">
-    <img src="assets/ambiguity_demo.gif?v=20261106b" alt="Blur slider demo">
-    <div>
-      <h2>Watch the evidence disappear</h2>
-      <p>Both faces of the genuine pair are blurred together, the impostor reference stays sharp. The scores
-        are traced point by point as the blur grows, and at the heaviest blur the two cross.</p>
-      <a class="btn" href="demo/ambiguity_demo.html">Open the slider &#8599;</a>
+    <div class="shot reveal">
+      <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="name">ambiguity_demo</span></div>
+      <img src="assets/ambiguity_demo.gif?v=20261106b" alt="Blur slider demo: scores traced as the blur grows">
+    </div>
+    <div class="reveal">
+      <div class="head">
+        <div class="label">Demo</div>
+        <h2>Watch the evidence disappear</h2>
+        <p>Both faces of the genuine pair are blurred together while the impostor reference stays sharp.
+          Scores are traced point by point; at the heaviest blur the two cross.</p>
+      </div>
+      <a class="btn" href="demo/ambiguity_demo.html">Drag the slider yourself <span class="arrow">&#8599;</span></a>
     </div>
   </div>
 </section>
 
 <section id="results">
   <div class="wrap">
-    <h2>Results</h2>
-    <p class="sub">IResNet-100, trained on MS1MV2 for 240k steps. 1:1 verification, TAR at the stated FAR.</p>
-    <table>
+    <div class="head reveal">
+      <div class="label">Results</div>
+      <h2>1:1 verification, IResNet-100 on MS1MV2</h2>
+      <p>Trained for 240k steps, reported as TAR at the stated false accept rate.</p>
+    </div>
+    <table class="reveal">
       <thead>
         <tr><th>Method</th><th>IJB-B 1e-5</th><th>IJB-B 1e-4</th><th>IJB-C 1e-5</th><th>IJB-C 1e-4</th></tr>
       </thead>
       <tbody>
-        <tr><td>SimPLE</td><td>91.13</td><td>94.78</td><td>94.34</td><td>96.27</td></tr>
-        <tr class="hl"><td>RipPLE</td><td>92.57</td><td>95.50</td><td>95.09</td><td>96.82</td></tr>
-        <tr><td>RipPLE-P</td><td>92.19</td><td>95.37</td><td>94.93</td><td>96.67</td></tr>
-        <tr><td>RipPLE-GM</td><td>92.01</td><td>95.20</td><td>94.78</td><td>96.58</td></tr>
+        <tr class="best"><td>RipPLE</td><td class="mono">92.57</td><td class="mono">95.50</td><td class="mono">95.09</td><td class="mono">96.82</td></tr>
+        <tr><td>RipPLE-P</td><td class="mono">92.19</td><td class="mono">95.37</td><td class="mono">94.93</td><td class="mono">96.67</td></tr>
+        <tr><td>RipPLE-GM</td><td class="mono">92.01</td><td class="mono">95.20</td><td class="mono">94.78</td><td class="mono">96.58</td></tr>
+        <tr><td>SimPLE</td><td class="mono">91.13</td><td class="mono">94.78</td><td class="mono">94.34</td><td class="mono">96.27</td></tr>
       </tbody>
     </table>
+    <p class="table-note">SimPLE is the pairwise baseline this work builds on; the three RipPLE rows differ only in what the norm constraint anchors.</p>
   </div>
 </section>
 
@@ -192,11 +290,28 @@
       <a href="https://github.com/bili186/Ripple">Code</a>
       <a href="https://huggingface.co/YunZhe123/Ripple">Models</a>
       <a href="demo/ambiguity_demo.html">Demo</a>
-      <a href="README.md">README</a>
-      <span style="margin-left:auto">MIT License &middot; built on OpenSphere</span>
+      <a href="https://github.com/bili186/Ripple/blob/main/README.md">README</a>
+      <span class="spacer">MIT License &middot; built on OpenSphere</span>
     </div>
   </div>
 </footer>
+
+<script>
+(function () {
+  var items = document.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window) ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    items.forEach(function (el) { el.classList.add('in'); });
+    return;
+  }
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.1 });
+  items.forEach(function (el) { io.observe(el); });
+})();
+</script>
 
 </body>
 </html>
