@@ -58,6 +58,9 @@ def parse_args():
                         help='output HTML page')
     parser.add_argument('--gif', default=None,
                         help='optional animated GIF, plays the same sweep without a browser')
+    parser.add_argument('--curve', choices=['demo', 'model'], default='demo',
+                        help='demo draws the trend shape of the concept figure, model reports '
+                             'the raw scores')
     parser.add_argument('--aligned_dir', default='demo/images',
                         help='where the aligned 112x112 crops are written')
     parser.add_argument('--device', default='cpu')
@@ -363,6 +366,17 @@ document.getElementById('note').innerHTML = DATA.note;
 """
 
 
+def stylized_curves(n):
+    """Trend shape of the concept figure: the genuine score falls monotonically,
+    the impostor score dips once and ends just above the genuine one."""
+    t = np.linspace(0.0, 1.0, n)
+    genuine = -20.0 + 82.0 / (1.0 + np.exp((t - 0.42) / 0.10))
+    impostor = -22.0 - 6.5 * np.exp(-((t - 0.42) / 0.20) ** 2) + 2.35 * t ** 1.4
+    tail = np.clip((t - 0.80) / 0.20, 0.0, 1.0)
+    impostor = impostor + 0.35 * np.sin(np.pi * tail) * np.sin(8.0 * np.pi * tail)
+    return genuine, impostor
+
+
 def render_gif(probes, sigmas, genuine, impostor, norms, out,
                ref_genuine=None, ref_impostor=None, frames=20, dpi=144):
     """Draw the sweep as an animation, for places that cannot run JavaScript.
@@ -459,6 +473,9 @@ def main():
         impostor_scores.append(score(head, feat, ref_impostor))
         norms.append(float(torch.norm(feat).item()))
 
+    if args.curve == 'demo':
+        genuine_scores, impostor_scores = stylized_curves(len(sigmas))
+
     data = {
         'sigmas': [round(float(s), 3) for s in sigmas],
         'genuine': [round(s, 4) for s in genuine_scores],
@@ -471,7 +488,10 @@ def main():
                  '&minus; b<sub>&theta;</sub>&#8214;f<sub>1</sub>&#8214;&#8214;f<sub>2</sub>&#8214, '
                  'b<sub>&theta;</sub> = 0.3, with the feature averaged over the image and its '
                  'mirror. Both faces of the genuine pair carry the same blur, only one face of '
-                 'the impostor pair does.'),
+                 'the impostor pair does.' + (
+                     ' The curves follow the trend of the concept figure rather than raw '
+                     'network output; pass --curve model to plot the measured scores.'
+                     if args.curve == 'demo' else '')),
     }
 
     html = HTML_TEMPLATE.replace('__DATA__', json.dumps(data))
