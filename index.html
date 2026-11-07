@@ -10,165 +10,197 @@
 <meta property="og:description" content="Direction encodes identity, norm carries evidence. Code, pretrained models and an interactive demo.">
 <meta property="og:image" content="https://bili186.github.io/Ripple/assets/ripple_concept.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#fbfcfe">
+<meta name="theme-color" content="#f7f5f1">
 <link rel="icon" href="assets/ripple_logo.svg" type="image/svg+xml">
 <style>
   :root {
-    --ink: #10161f; --muted: #5b6b7c; --faint: #8c9aab;
-    --line: #e5e9f0; --line-strong: #d3dae4;
-    --accent: #2f6fd0; --accent-soft: #eaf1fb;
-    --bg: #fbfcfe; --panel: #ffffff; --panel-muted: #f5f7fa;
-    --shadow: 0 1px 2px rgba(16, 22, 31, .04);
-    --max: 1080px;
+    --paper: #f7f5f1;
+    --panel: #fffefb;
+    --ink: #171a1d;
+    --muted: #5c6470;
+    --faint: #8b929c;
+    --rule: #e3ded6;
+    --rule-strong: #cfc8bc;
+    --accent: #b8412e;
+    --accent-soft: #f6e9e4;
+    --max: 1100px;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --ink: #e6edf5; --muted: #9aa9ba; --faint: #748394;
-      --line: #1e2836; --line-strong: #2a3646;
-      --accent: #6ea8fe; --accent-soft: #16233a;
-      --bg: #0c1117; --panel: #121922; --panel-muted: #0f161e;
-      --shadow: none;
+      --paper: #121110;
+      --panel: #191817;
+      --ink: #ece8e2;
+      --muted: #a4a19a;
+      --faint: #787570;
+      --rule: #2b2926;
+      --rule-strong: #3d3a36;
+      --accent: #e0705a;
+      --accent-soft: #2a1c18;
     }
-    .shot img { opacity: .92; }
+    .shot img { filter: none; }
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
   body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font: 16px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    margin: 0; background: var(--paper); color: var(--ink);
+    font: 16px/1.7 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
     -webkit-font-smoothing: antialiased;
   }
   a { color: inherit; text-decoration: none; }
-  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 28px; }
-  .mono { font-variant-numeric: tabular-nums; }
+  a:hover { color: var(--accent); }
+  ::selection { background: var(--accent); color: var(--paper); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+  .sans { font-family: ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .num { font-variant-numeric: tabular-nums; }
 
-  /* ---------- nav ---------- */
-  .nav {
-    position: sticky; top: 0; z-index: 20;
-    background: var(--bg);
-    background: color-mix(in srgb, var(--bg) 88%, transparent);
-    backdrop-filter: saturate(160%) blur(10px);
-    border-bottom: 1px solid var(--line);
+  /* nav */
+  .nav { border-bottom: 1px solid var(--rule); }
+  .nav .wrap { display: flex; align-items: center; gap: 18px; height: 64px; }
+  .nav .brand img { height: 24px; display: block; }
+  .nav .links {
+    margin-left: auto; display: flex; align-items: center; gap: 26px;
+    font: 14px/1 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
   }
-  .nav .wrap { display: flex; align-items: center; gap: 16px; height: 60px; }
-  .nav .brand { display: flex; align-items: center; gap: 10px; font-weight: 640; letter-spacing: -.01em; }
-  .nav .brand img { height: 26px; display: block; }
-  .nav .links { margin-left: auto; display: flex; align-items: center; gap: 26px; font-size: 14px; }
-  .nav .links a { color: var(--muted); transition: color .15s; }
+  .nav .links a { color: var(--muted); }
   .nav .links a:hover { color: var(--ink); }
-  .nav .cta {
-    color: var(--ink); border: 1px solid var(--line-strong); border-radius: 8px;
-    padding: 7px 14px; font-size: 13.5px; transition: border-color .15s, background .15s;
-  }
-  .nav .cta:hover { border-color: var(--accent); color: var(--accent); }
+  .nav .ext { border-bottom: 1px solid var(--rule-strong); padding-bottom: 2px; }
 
-  /* ---------- hero ---------- */
-  .hero { padding: 96px 0 76px; border-bottom: 1px solid var(--line); }
-  .eyebrow {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint);
-  }
-  .eyebrow::before {
-    content: ""; width: 18px; height: 1px; background: var(--accent); display: block;
-  }
+  /* hero */
+  .hero { padding: 76px 0 84px; }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 72px; align-items: start; }
   h1 {
-    margin: 20px 0 20px; font-size: clamp(32px, 4.6vw, 50px); line-height: 1.16;
-    letter-spacing: -.025em; font-weight: 680; max-width: 900px;
+    margin: 0 0 22px; font-size: clamp(34px, 4.3vw, 54px); line-height: 1.1;
+    letter-spacing: -.022em; font-weight: 480;
   }
-  h1 span { color: var(--accent); }
-  .lede { margin: 0 0 34px; max-width: 720px; color: var(--muted); font-size: 17px; line-height: 1.75; }
-  .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  h1 i { font-style: italic; color: var(--accent); }
+  .lede { margin: 0 0 30px; color: var(--muted); font-size: 17.5px; line-height: 1.75; max-width: 34ch; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
   .btn {
-    display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 20px;
-    border: 1px solid var(--line-strong); border-radius: 9px; background: var(--panel);
-    font-size: 14.5px; color: var(--ink); box-shadow: var(--shadow);
-    transition: border-color .15s, transform .15s, background .15s;
+    display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 22px;
+    background: var(--ink); color: var(--paper); border: 1px solid var(--ink);
+    font: 14px/1 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    transition: background .16s ease, border-color .16s ease, transform .16s ease;
   }
-  .btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
-  .btn.solid { background: var(--ink); border-color: var(--ink); color: var(--bg); }
-  .btn.solid:hover { background: #24303f; border-color: #24303f; color: #fff; }
-  .btn .arrow { font-size: 12px; opacity: .55; }
-
-  .facts { display: flex; flex-wrap: wrap; gap: 40px; margin-top: 44px; }
-  .fact .v { font-size: 26px; font-weight: 680; letter-spacing: -.02em; }
-  .fact .k { font-size: 12.5px; color: var(--faint); letter-spacing: .04em; text-transform: uppercase; }
-
-  /* ---------- sections ---------- */
-  section { padding: 76px 0; border-bottom: 1px solid var(--line); }
-  .head { margin-bottom: 36px; }
-  .head .label { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
-  .head h2 { margin: 10px 0 8px; font-size: 26px; letter-spacing: -.015em; font-weight: 660; }
-  .head p { margin: 0; max-width: 680px; color: var(--muted); font-size: 15.5px; }
-
-  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-  .card {
-    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
-    padding: 26px 24px; box-shadow: var(--shadow);
-    transition: border-color .18s, transform .18s;
+  .btn:hover { background: var(--accent); border-color: var(--accent); color: var(--paper); transform: translateY(-1px); }
+  .linkline {
+    font: 14px/1.5 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--muted); border-bottom: 1px solid var(--rule-strong); padding-bottom: 3px;
   }
-  .card:hover { border-color: var(--line-strong); transform: translateY(-2px); }
-  .card .n { font-size: 12px; color: var(--faint); letter-spacing: .1em; }
-  .card h3 { margin: 14px 0 10px; font-size: 16.5px; font-weight: 640; letter-spacing: -.01em; }
-  .card p { margin: 0; font-size: 14.5px; line-height: 1.75; color: var(--muted); }
+  .linkline:hover { color: var(--accent); border-color: var(--accent); }
 
-  .figure {
-    margin: 44px 0 0; background: var(--panel-muted); border: 1px solid var(--line);
-    border-radius: 12px; padding: 18px;
+  /* focal panel */
+  .evidence {
+    border: 1px solid var(--rule); background: var(--panel); padding: 22px 22px 18px;
   }
-  .figure img { width: 100%; display: block; border-radius: 8px; }
-  .figure figcaption { margin: 16px 4px 2px; font-size: 13.5px; line-height: 1.75; color: var(--muted); }
+  .ev-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+  .ev-head .t { font: 13px/1 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--faint); letter-spacing: .02em; }
+  .ev-head .s { margin-left: auto; font-size: 13px; color: var(--faint); }
+  .ev-score { font-size: 34px; line-height: 1.2; letter-spacing: -.01em; margin: 6px 0 0; }
+  .ev-score span + span { font-size: 14px; color: var(--faint); margin-left: 8px; }
+  .ev-svg { display: block; width: 100%; height: auto; }
+  .ev-foot {
+    display: flex; align-items: center; gap: 14px; margin-top: 10px;
+    font: 13px/1.4 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  .verdict {
+    padding: 5px 10px; border: 1px solid var(--rule-strong); color: var(--muted);
+    transition: background .18s ease, border-color .18s ease, color .18s ease;
+    transition-delay: .05s;
+  }
+  .verdict.decisive { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+  .ev-hint { margin-left: auto; color: var(--faint); }
 
-  .demo { display: grid; grid-template-columns: 1.45fr 1fr; gap: 44px; align-items: center; }
-  .shot {
-    border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
-    background: var(--panel); box-shadow: var(--shadow);
+  .slider-wrap { margin-top: 16px; }
+  .slider-wrap .row {
+    display: flex; align-items: baseline; justify-content: space-between;
+    font: 12px/1 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--faint); letter-spacing: .04em; text-transform: uppercase;
   }
-  .shot .bar {
-    display: flex; gap: 6px; align-items: center; padding: 10px 14px;
-    border-bottom: 1px solid var(--line); background: var(--panel-muted);
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none; width: 100%; height: 26px; margin: 8px 0 0;
+    background: transparent; cursor: ew-resize;
   }
-  .shot .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line-strong); }
-  .shot .name { margin-left: 8px; font-size: 12px; color: var(--faint); letter-spacing: .02em; }
+  input[type="range"]::-webkit-slider-runnable-track { height: 2px; background: var(--rule-strong); }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; margin-top: -6px;
+    background: var(--accent); border: 0; border-radius: 50%;
+  }
+  input[type="range"]::-moz-range-track { height: 2px; background: var(--rule-strong); }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px; height: 14px; background: var(--accent); border: 0; border-radius: 50%;
+  }
+
+  /* sections */
+  section { padding: 84px 0; border-top: 1px solid var(--rule); }
+  h2 { margin: 0 0 14px; font-size: clamp(26px, 2.6vw, 34px); line-height: 1.25; letter-spacing: -.015em; font-weight: 480; }
+  .sub { margin: 0 0 44px; color: var(--muted); font-size: 16.5px; max-width: 62ch; }
+
+  .two { display: grid; grid-template-columns: 1fr 1.12fr; gap: 64px; align-items: start; }
+  .defs { margin: 0; }
+  .defs > div { padding: 20px 0; border-top: 1px solid var(--rule); }
+  .defs > div:first-child { border-top: 0; padding-top: 0; }
+  .defs dt {
+    font: 15px/1.4 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    letter-spacing: .01em; margin-bottom: 6px;
+  }
+  .defs dt em { color: var(--accent); font-style: normal; }
+  .defs dd { margin: 0; color: var(--muted); font-size: 15.5px; line-height: 1.7; }
+
+  .frame { border: 1px solid var(--rule); background: var(--panel); padding: 16px; }
+  .frame img { width: 100%; display: block; }
+  .frame figcaption { margin: 14px 2px 0; font: 13.5px/1.65 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--muted); }
+
+  .demo { display: grid; grid-template-columns: 1.5fr 1fr; gap: 56px; align-items: center; }
+  .shot { border: 1px solid var(--rule); background: var(--panel); }
   .shot img { width: 100%; display: block; }
-  .demo .head { margin-bottom: 20px; }
-  .demo .btn { margin-top: 22px; }
+  .demo .sub { margin-bottom: 26px; }
 
-  table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
   thead th {
-    text-align: right; font-weight: 560; font-size: 12px; letter-spacing: .06em;
-    text-transform: uppercase; color: var(--faint); padding: 0 12px 12px;
-    border-bottom: 1px solid var(--line-strong);
+    padding: 0 14px 12px; border-bottom: 1px solid var(--rule-strong); text-align: right;
+    font: 11.5px/1.4 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--faint); font-weight: 500;
   }
   thead th:first-child { text-align: left; }
-  tbody td { padding: 14px 12px; text-align: right; border-bottom: 1px solid var(--line); }
-  tbody td:first-child { text-align: left; font-weight: 560; }
-  tbody tr.best td { background: var(--accent-soft); }
-  tbody tr.best td:first-child { color: var(--accent); }
-  tbody tr.best td:first-child::after { content: " \2190 ours"; font-size: 11px; letter-spacing: .06em; }
-  .table-note { margin: 18px 0 0; font-size: 13px; color: var(--faint); }
-
-  footer { padding: 44px 0 72px; }
-  footer .row { display: flex; flex-wrap: wrap; align-items: center; gap: 26px; font-size: 14px; }
-  footer a { color: var(--muted); transition: color .15s; }
-  footer a:hover { color: var(--accent); }
-  footer .spacer { margin-left: auto; color: var(--faint); font-size: 13px; }
-
-  .reveal { opacity: 0; transform: translateY(10px); }
-  .reveal.in { opacity: 1; transform: none; transition: opacity .5s ease, transform .5s ease; }
-  @media (prefers-reduced-motion: reduce) {
-    .reveal { opacity: 1; transform: none; }
-    .btn:hover, .card:hover { transform: none; }
-    html { scroll-behavior: auto; }
+  tbody td { padding: 15px 14px; text-align: right; border-bottom: 1px solid var(--rule); }
+  tbody td:first-child {
+    text-align: left; font: 15px/1.4 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  tbody tr.ours td { background: var(--accent-soft); }
+  tbody tr.ours td:first-child { color: var(--accent); font-weight: 600; }
+  tbody td.top { font-weight: 600; }
+  .table-note {
+    margin: 20px 0 0; font: 13.5px/1.7 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--faint); max-width: 70ch;
   }
 
-  @media (max-width: 900px) {
+  footer { padding: 52px 0 76px; border-top: 1px solid var(--rule); }
+  footer .row {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 28px;
+    font: 14px/1 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  footer a { color: var(--muted); border-bottom: 1px solid var(--rule-strong); padding-bottom: 2px; }
+  footer a:hover { color: var(--accent); border-color: var(--accent); }
+  footer .spacer { margin-left: auto; color: var(--faint); font-size: 13px; }
+
+  ::-webkit-scrollbar { width: 11px; height: 11px; }
+  ::-webkit-scrollbar-track { background: var(--paper); }
+  ::-webkit-scrollbar-thumb { background: var(--rule-strong); border: 3px solid var(--paper); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--faint); }
+
+  @media (max-width: 960px) {
+    .hero-grid, .two, .demo { grid-template-columns: 1fr; gap: 40px; }
+    .hero { padding: 52px 0 60px; }
+    section { padding: 60px 0; }
     .nav .links a.hide-sm { display: none; }
-    .demo { grid-template-columns: 1fr; gap: 28px; }
-    .grid3 { grid-template-columns: 1fr; }
-    section { padding: 56px 0; }
-    .hero { padding: 64px 0 56px; }
-    .facts { gap: 28px; }
-    thead th, tbody td { padding-left: 6px; padding-right: 6px; }
+    .lede { max-width: none; }
+    thead th, tbody td { padding-left: 7px; padding-right: 7px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .btn:hover { transform: none; }
+    .verdict { transition-delay: 0s; }
   }
 </style>
 </head>
@@ -176,140 +208,206 @@
 
 <nav class="nav">
   <div class="wrap">
-    <a class="brand" href="#top"><img src="assets/ripple_logo.png" alt="RipPLE"></a>
+    <a class="brand" href="#top" aria-label="RipPLE"><img src="assets/ripple_logo.png" alt="RipPLE"></a>
     <div class="links">
       <a href="#method">Method</a>
       <a href="#demo">Demo</a>
       <a href="#results">Results</a>
       <a class="hide-sm" href="https://github.com/bili186/Ripple">Code</a>
-      <a class="hide-sm" href="https://huggingface.co/YunZhe123/Ripple">Models</a>
-      <a class="cta" href="https://github.com/bili186/Ripple">GitHub</a>
+      <a class="hide-sm ext" href="https://huggingface.co/YunZhe123/Ripple">Models</a>
     </div>
   </div>
 </nav>
 
 <header class="hero" id="top">
-  <div class="wrap">
-    <div class="eyebrow">Research project &middot; under review</div>
-    <h1>Concentric Hypersphere Embedding for <span>Pairwise Similarity Learning</span></h1>
-    <p class="lede">An angular score tells how alike two faces look, not how much evidence supports it.
-      RipPLE keeps the norm: direction encodes identity, the norm carries evidence, and one constraint on
-      the mean norm keeps the loss temperature in a workable range.</p>
-    <div class="actions">
-      <a class="btn solid" href="https://github.com/bili186/Ripple">Code <span class="arrow">&#8599;</span></a>
-      <a class="btn" href="https://huggingface.co/YunZhe123/Ripple">Pretrained models <span class="arrow">&#8599;</span></a>
-      <a class="btn" href="demo/ambiguity_demo.html">Open the demo</a>
+  <div class="wrap hero-grid">
+    <div>
+      <h1>Concentric Hypersphere Embedding for <i>Pairwise Similarity Learning</i></h1>
+      <p class="lede">An angular score says how alike two faces look, not how much evidence supports it.
+        RipPLE keeps the norm: direction is identity, length is evidence.</p>
+      <div class="actions">
+        <a class="btn" href="https://github.com/bili186/Ripple">Code</a>
+        <a class="linkline" href="https://huggingface.co/YunZhe123/Ripple">Pretrained models</a>
+        <a class="linkline" href="demo/ambiguity_demo.html">Faces demo</a>
+      </div>
     </div>
-    <div class="facts">
-      <div class="fact"><div class="v mono">95.50</div><div class="k">IJB-B TAR@1e-4</div></div>
-      <div class="fact"><div class="v mono">96.82</div><div class="k">IJB-C TAR@1e-4</div></div>
-      <div class="fact"><div class="v mono">3</div><div class="k">Anchoring forms</div></div>
+
+    <div class="evidence" id="evidence">
+      <div class="ev-head">
+        <span class="t">Embedding of one degraded face</span>
+        <span class="s num" id="ev-norm">&Vert;f&Vert; 8.41</span>
+      </div>
+      <p class="ev-score num"><span id="ev-score">+60.8</span><span>score against its mate</span></p>
+      <svg class="ev-svg" viewBox="0 0 320 250" role="img" aria-labelledby="ev-desc">
+        <desc id="ev-desc">A vector shrinking toward the centre of concentric spheres as the face degrades.</desc>
+        <g stroke="var(--rule)" fill="none" stroke-width="1">
+          <circle cx="160" cy="125" r="112" stroke-dasharray="3 5"/>
+          <circle cx="160" cy="125" r="84" stroke-dasharray="3 5"/>
+          <circle cx="160" cy="125" r="56" stroke-dasharray="3 5"/>
+          <circle cx="160" cy="125" r="28" stroke-dasharray="3 5"/>
+        </g>
+        <circle cx="160" cy="125" r="2.5" fill="var(--faint)"/>
+        <line id="ev-line" x1="160" y1="125" x2="160" y2="125" stroke="var(--accent)" stroke-width="2"/>
+        <circle id="ev-dot" cx="160" cy="125" r="5.5" fill="var(--accent)"/>
+        <text x="160" y="18" text-anchor="middle" fill="var(--faint)"
+              style="font:12px ui-sans-serif,-apple-system,sans-serif;letter-spacing:.06em">EVIDENCE</text>
+        <line x1="138" y1="236" x2="182" y2="236" stroke="var(--rule-strong)"/>
+        <text x="160" y="230" text-anchor="middle" fill="var(--faint)" style="font:11px ui-sans-serif,-apple-system,sans-serif">centre</text>
+      </svg>
+      <div class="ev-foot">
+        <span class="verdict decisive" id="ev-verdict">same person</span>
+        <span class="ev-hint">drag to degrade</span>
+      </div>
+      <div class="slider-wrap">
+        <div class="row"><label for="ev-blur">blur</label><span id="ev-sigma" class="num">&sigma; 0.0</span></div>
+        <input id="ev-blur" type="range" min="0" max="10" step="0.5" value="0" aria-label="Blur strength">
+      </div>
     </div>
   </div>
 </header>
 
 <section id="method">
   <div class="wrap">
-    <div class="head reveal">
-      <div class="label">Method</div>
-      <h2>One embedding, two quantities</h2>
-      <p>Standard practice fixes every norm to one, discarding how informative each image is.
-        RipPLE lets the pairwise loss decide it instead.</p>
+    <h2>One embedding, two quantities</h2>
+    <p class="sub">Normalised embeddings throw away how informative an image is. RipPLE lets the pairwise
+      loss decide it, and anchors only the collective scale so training stays stable.</p>
+    <div class="two">
+      <dl class="defs">
+        <div>
+          <dt>Direction &mdash; <em>identity</em></dt>
+          <dd>The unit vector still separates identities, so the geometry of the recognition problem is unchanged.</dd>
+        </div>
+        <div>
+          <dt>Norm &mdash; <em>evidence</em></dt>
+          <dd>A clear face grows a long vector, an occluded or blurred one shrinks. An uncertain pair scores near
+            zero instead of looking like a confident impostor.</dd>
+        </div>
+        <div>
+          <dt>ENC &mdash; <em>one anchor</em></dt>
+          <dd>Only the batch mean is anchored and every individual norm stays free; that is what separates RipPLE
+            from a fixed-norm baseline.</dd>
+        </div>
+      </dl>
+      <figure class="frame">
+        <img src="assets/ripple_concept.png" alt="Under degradation the genuine and impostor score distributions converge toward zero">
+        <figcaption>Degraded faces move closer across identities while a degraded face moves away from its clean
+          images. Because the norm records the evidence, both distributions converge toward zero and a degraded
+          pair reads as hard to decide rather than wrongly decided.</figcaption>
+      </figure>
     </div>
-    <div class="grid3">
-      <div class="card reveal">
-        <div class="n">01</div>
-        <h3>Direction is identity</h3>
-        <p>The unit vector still separates identities, so the geometry of the recognition problem is unchanged.</p>
-      </div>
-      <div class="card reveal">
-        <div class="n">02</div>
-        <h3>Norm is evidence</h3>
-        <p>A clear face grows a long vector, an occluded or blurred one shrinks. An uncertain pair then
-          scores near zero instead of looking like a confident impostor.</p>
-      </div>
-      <div class="card reveal">
-        <div class="n">03</div>
-        <h3>ENC anchors the mean</h3>
-        <p>Only the batch mean is anchored; each individual norm stays free. This is what separates
-          RipPLE from a fixed-norm baseline.</p>
-      </div>
-    </div>
-    <figure class="figure reveal">
-      <img src="assets/ripple_concept.png" alt="Under degradation, the genuine and impostor score distributions converge toward zero">
-      <figcaption>Under occlusion, pose and blur, degraded faces move closer across identities while a degraded
-        face moves away from its clean images. The norm records how much evidence each input provides, so both
-        distributions converge toward zero and a degraded pair reads as hard to decide rather than wrongly decided.</figcaption>
-    </figure>
   </div>
 </section>
 
 <section id="demo">
   <div class="wrap demo">
-    <div class="shot reveal">
-      <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="name">ambiguity_demo</span></div>
-      <img src="assets/ambiguity_demo.gif?v=20261106b" alt="Blur slider demo: scores traced as the blur grows">
+    <div class="shot">
+      <img src="assets/ambiguity_demo.gif?v=20261107" alt="Blur slider demo: scores traced as the blur grows">
     </div>
-    <div class="reveal">
-      <div class="head">
-        <div class="label">Demo</div>
-        <h2>Watch the evidence disappear</h2>
-        <p>Both faces of the genuine pair are blurred together while the impostor reference stays sharp.
-          Scores are traced point by point; at the heaviest blur the two cross.</p>
-      </div>
-      <a class="btn" href="demo/ambiguity_demo.html">Drag the slider yourself <span class="arrow">&#8599;</span></a>
+    <div>
+      <h2>Watch the scores cross</h2>
+      <p class="sub">Both faces of the genuine pair blur together while the impostor reference stays sharp.
+        Scores are traced point by point, and at the heaviest blur the two meet.</p>
+      <a class="btn" href="demo/ambiguity_demo.html">Open the slider</a>
     </div>
   </div>
 </section>
 
 <section id="results">
   <div class="wrap">
-    <div class="head reveal">
-      <div class="label">Results</div>
-      <h2>1:1 verification, IResNet-100 on MS1MV2</h2>
-      <p>Trained for 240k steps, reported as TAR at the stated false accept rate.</p>
-    </div>
-    <table class="reveal">
+    <h2>1:1 verification, IResNet-100 on MS1MV2</h2>
+    <p class="sub">240k training steps, reported as TAR at the stated false accept rate.</p>
+    <table>
       <thead>
         <tr><th>Method</th><th>IJB-B 1e-5</th><th>IJB-B 1e-4</th><th>IJB-C 1e-5</th><th>IJB-C 1e-4</th></tr>
       </thead>
       <tbody>
-        <tr class="best"><td>RipPLE</td><td class="mono">92.57</td><td class="mono">95.50</td><td class="mono">95.09</td><td class="mono">96.82</td></tr>
-        <tr><td>RipPLE-P</td><td class="mono">92.19</td><td class="mono">95.37</td><td class="mono">94.93</td><td class="mono">96.67</td></tr>
-        <tr><td>RipPLE-GM</td><td class="mono">92.01</td><td class="mono">95.20</td><td class="mono">94.78</td><td class="mono">96.58</td></tr>
-        <tr><td>SimPLE</td><td class="mono">91.13</td><td class="mono">94.78</td><td class="mono">94.34</td><td class="mono">96.27</td></tr>
+        <tr class="ours">
+          <td>RipPLE</td><td class="num top">92.57</td><td class="num top">95.50</td><td class="num top">95.09</td><td class="num top">96.82</td>
+        </tr>
+        <tr>
+          <td>RipPLE-P</td><td class="num">92.19</td><td class="num">95.37</td><td class="num">94.93</td><td class="num">96.67</td>
+        </tr>
+        <tr>
+          <td>RipPLE-GM</td><td class="num">92.01</td><td class="num">95.20</td><td class="num">94.78</td><td class="num">96.58</td>
+        </tr>
+        <tr>
+          <td>SimPLE</td><td class="num">91.13</td><td class="num">94.78</td><td class="num">94.34</td><td class="num">96.27</td>
+        </tr>
       </tbody>
     </table>
-    <p class="table-note">SimPLE is the pairwise baseline this work builds on; the three RipPLE rows differ only in what the norm constraint anchors.</p>
+    <p class="table-note">SimPLE is the pairwise baseline this work builds on; the three RipPLE rows differ only in
+      what the norm constraint anchors. Comparison numbers are quoted from the respective papers.</p>
   </div>
 </section>
 
 <footer>
-  <div class="wrap">
-    <div class="row">
-      <a href="https://github.com/bili186/Ripple">Code</a>
-      <a href="https://huggingface.co/YunZhe123/Ripple">Models</a>
-      <a href="demo/ambiguity_demo.html">Demo</a>
-      <a href="https://github.com/bili186/Ripple/blob/main/README.md">README</a>
-      <span class="spacer">MIT License &middot; built on OpenSphere</span>
-    </div>
+  <div class="wrap row">
+    <a href="https://github.com/bili186/Ripple">Code</a>
+    <a href="https://huggingface.co/YunZhe123/Ripple">Models</a>
+    <a href="demo/ambiguity_demo.html">Demo</a>
+    <a href="https://github.com/bili186/Ripple/blob/main/README.md">README</a>
+    <span class="spacer">MIT License &middot; built on OpenSphere</span>
   </div>
 </footer>
 
 <script>
 (function () {
-  var items = document.querySelectorAll('.reveal');
-  if (!('IntersectionObserver' in window) ||
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    items.forEach(function (el) { el.classList.add('in'); });
-    return;
+  var root = document.getElementById('evidence');
+  if (!root) return;
+  var slider = root.querySelector('#ev-blur');
+  var line = root.querySelector('#ev-line');
+  var dot = root.querySelector('#ev-dot');
+  var scoreEl = root.querySelector('#ev-score');
+  var normEl = root.querySelector('#ev-norm');
+  var sigEl = root.querySelector('#ev-sigma');
+  var verdict = root.querySelector('#ev-verdict');
+  var CX = 160, CY = 125, ANG = -2.36;
+
+  function score(sigma) {
+    return 60.79 - 80.54 * Math.pow(sigma / 10, 1.35);
   }
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) {
-      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-    });
-  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.1 });
-  items.forEach(function (el) { io.observe(el); });
+  function norm(sigma) {
+    return 8.41 - 0.277 * sigma;
+  }
+
+  function render(sigma) {
+    var n = norm(sigma);
+    var r = 112 * (n / 8.41);
+    var x = CX + Math.cos(ANG) * r;
+    var y = CY + Math.sin(ANG) * r;
+    line.setAttribute('x2', x.toFixed(1));
+    line.setAttribute('y2', y.toFixed(1));
+    dot.setAttribute('cx', x.toFixed(1));
+    dot.setAttribute('cy', y.toFixed(1));
+    var s = score(sigma);
+    scoreEl.textContent = (s >= 0 ? '+' : '\u2212') + Math.abs(s).toFixed(1);
+    normEl.innerHTML = '&Vert;f&Vert; ' + n.toFixed(2);
+    sigEl.innerHTML = '&sigma; ' + sigma.toFixed(1);
+    var decisive = s > 12;
+    verdict.textContent = decisive ? 'same person' : 'hard to decide';
+    verdict.classList.toggle('decisive', decisive);
+    if (slider.value !== String(sigma)) slider.value = sigma;
+  }
+
+  slider.addEventListener('input', function () {
+    render(parseFloat(slider.value));
+  });
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) {
+    render(0);
+  } else {
+    var start = null, DUR = 2600;
+    var step = function (t) {
+      if (start === null) start = t;
+      var p = Math.min((t - start) / DUR, 1);
+      var eased = 1 - Math.pow(1 - p, 3);
+      render(eased * 10);
+      if (p < 1) requestAnimationFrame(step);
+    };
+    render(0);
+    requestAnimationFrame(step);
+  }
 })();
 </script>
 
