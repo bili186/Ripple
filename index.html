@@ -24,7 +24,7 @@
     --accent: #b8412e;
     --accent-soft: #f6e9e4;
     --max: 1100px;
-    --nav: 64px;
+    --nav: 60px;
     --sans: ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
     --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   }
@@ -68,7 +68,7 @@
     display: flex; align-items: center; justify-content: center;
   }
   .canvas {
-    position: relative; flex: none; width: 1440px; height: 900px;
+    position: relative; flex: none; width: 1512px; height: 900px;
     transform-origin: center center; will-change: transform;
   }
   .leaders {
@@ -77,12 +77,12 @@
   }
 
   .frame {
-    position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 30;
+    position: absolute; z-index: 2;
     border: 1px solid var(--accent); opacity: 0; pointer-events: none;
   }
   .frame i {
-    position: absolute; width: 7px; height: 7px; background: var(--panel);
-    border: 1px solid var(--accent); margin: -4px 0 0 -4px;
+    position: absolute; width: 6px; height: 6px; background: var(--paper);
+    border: 1px solid var(--accent); margin: -3.5px 0 0 -3.5px;
   }
   .frame i.tl { left: 0; top: 0; }
   .frame i.tc { left: 50%; top: 0; }
@@ -94,71 +94,71 @@
   .frame i.br { left: 100%; top: 100%; }
 
   .card {
-    position: absolute; left: 0; top: 0; width: 190px; height: 190px; margin: 0;
-    overflow: hidden; background: var(--panel);
-    transform-origin: center center; will-change: transform;
-    box-shadow: 0 1px 2px rgba(24, 18, 12, .10), 0 10px 22px -12px rgba(24, 18, 12, .45);
-    transition: opacity .25s ease, filter .25s ease;
+    position: absolute; margin: 0; overflow: hidden; background: var(--panel);
+    z-index: 3; will-change: left, top, width, height, opacity, transform;
+    box-shadow: 0 1px 2px rgba(24, 18, 12, .10), 0 12px 26px -14px rgba(24, 18, 12, .5);
+    transition: filter .25s ease;
   }
   .card img {
-    position: absolute; left: -8%; top: -8%; width: 116%; height: 116%;
-    object-fit: cover; display: block;
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: center 32%; display: block;
     filter: blur(calc(var(--b, 0) * 1px));
   }
-  .card figcaption {
-    position: absolute; left: 0; right: 0; bottom: 0;
-    display: flex; justify-content: space-between; gap: 8px; padding: 16px 9px 7px;
-    font: 11.5px/1 var(--sans); letter-spacing: .02em; color: #fff;
-    background: linear-gradient(to top, rgba(10, 8, 6, .62), rgba(10, 8, 6, 0));
-  }
-  .card figcaption b { font-weight: 500; opacity: .92; }
-  .card figcaption span { font-variant-numeric: tabular-nums; }
+  .card.doc-card { background: var(--panel); }
+  .card svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .card svg .lab { font: 500 9px var(--sans); letter-spacing: .14em; fill: var(--faint); }
+  .card svg .val { font: 400 32px var(--serif); fill: var(--ink); }
+  .card svg .fx { font: 400 15px var(--serif); fill: var(--ink); }
+  .card svg .ln { stroke: var(--rule); stroke-width: 1; }
+
+  .card.split img:first-child { width: 50%; }
+  .card.split img:last-child { left: 50%; width: 50%; border-left: 1px solid rgba(255, 255, 255, .6); }
+  .card.dim { filter: grayscale(1); }
+  .card.z12 { z-index: 12; }
+  .card.z14 { z-index: 14; }
+  .card.z16 { z-index: 16; }
 
   .cap {
-    position: absolute; opacity: 0; pointer-events: none;
-    font-family: var(--sans);
+    position: absolute; z-index: 6; opacity: 0; pointer-events: none;
+    font-family: var(--sans); max-width: 190px;
   }
   .cap b {
-    display: block; font: 500 11.5px/1 var(--sans); letter-spacing: .13em;
-    text-transform: uppercase; color: var(--ink);
+    display: block; font: 500 10.5px/1.4 var(--sans); letter-spacing: .16em;
+    text-transform: uppercase; color: var(--faint);
+    transition: color .2s ease;
   }
-  .cap span { display: block; margin-top: 7px; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+  .cap span {
+    display: block; margin-top: 4px; font-size: 12.5px; line-height: 1.4; color: var(--ink);
+  }
+  .cap.on b { color: var(--accent); }
 
-  #canvas.focus .card { opacity: .28 !important; filter: grayscale(1); }
-  #canvas.focus .card.on { opacity: 1 !important; filter: none; }
-  #canvas.focus .cap b { color: var(--faint); }
-  #canvas.focus .cap.on b { color: var(--accent); }
-  #canvas.focus .cap.on span { color: var(--ink); }
-
-  .intro { position: absolute; left: 100px; top: 450px; width: 448px; }
+  .intro { position: absolute; left: 120px; top: 545px; width: 336px; z-index: 8; }
   .intro h1 {
-    margin: 0 0 20px; font-size: 44px; line-height: 1.12;
+    margin: 0 0 16px; font-size: 33px; line-height: 1.15;
     letter-spacing: -.022em; font-weight: 480;
   }
   .intro h1 i { font-style: italic; color: var(--accent); }
-  .lede { margin: 0 0 26px; color: var(--muted); font-size: 16.5px; line-height: 1.72; }
+  .lede { margin: 0 0 22px; color: var(--muted); font-size: 15px; line-height: 1.68; }
   .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
   .btn {
-    display: inline-flex; align-items: center; height: 42px; padding: 0 20px;
+    display: inline-flex; align-items: center; height: 40px; padding: 0 18px;
     background: var(--ink); color: var(--paper); border: 1px solid var(--ink);
-    font: 13.5px/1 var(--sans);
+    font: 13px/1 var(--sans);
     transition: background .16s ease, border-color .16s ease, transform .16s ease;
   }
   .btn:hover { background: var(--accent); border-color: var(--accent); color: var(--paper); transform: translateY(-1px); }
   .linkline {
-    font: 13.5px/1.5 var(--sans); color: var(--muted);
+    font: 13px/1.5 var(--sans); color: var(--muted);
     border-bottom: 1px solid var(--rule-strong); padding-bottom: 3px;
   }
   .linkline:hover { color: var(--accent); border-color: var(--accent); }
 
   .cue {
-    position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%);
+    position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%);
     font: 10.5px/1 var(--sans); letter-spacing: .22em; text-transform: uppercase;
     color: var(--faint); display: flex; align-items: center; gap: 10px;
   }
-  .cue::after {
-    content: ""; width: 1px; height: 22px; background: var(--rule-strong);
-  }
+  .cue::after { content: ""; width: 1px; height: 22px; background: var(--rule-strong); }
 
   /* ---------- sections ---------- */
   section { padding: 84px 0; border-top: 1px solid var(--rule); }
@@ -219,22 +219,21 @@
     .stage { height: auto; }
     .hold {
       position: static; height: auto; overflow: visible; display: block;
-      padding: 36px 20px 8px;
+      padding: 32px 20px 8px;
     }
     .canvas { width: auto; height: auto; transform: none !important; display: grid;
-      grid-template-columns: repeat(3, 1fr); gap: 10px; }
+      grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .leaders, .frame, .cue { display: none; }
-    .intro { position: static; width: auto; grid-column: 1 / -1; margin-bottom: 14px; }
-    .intro h1 { font-size: clamp(30px, 8vw, 40px); }
+    .intro { position: static; width: auto; grid-column: 1 / -1; margin-bottom: 16px; }
+    .intro h1 { font-size: clamp(28px, 7.5vw, 38px); }
     .card {
       position: static !important; transform: none !important; opacity: 1 !important;
-      width: 100% !important; height: auto !important; aspect-ratio: 1;
-      transition: none;
+      width: 100% !important; height: auto !important; aspect-ratio: 1; z-index: auto !important;
     }
-    .card figcaption { padding: 14px 7px 6px; font-size: 10px; }
+    .card.split img:last-child { border-left: 0; }
     .cap {
       position: static !important; opacity: 1 !important; grid-column: 1 / -1;
-      padding-top: 6px;
+      max-width: none; padding-top: 4px;
     }
     .cap b { color: var(--accent); }
     section { padding: 60px 0; }
@@ -265,6 +264,88 @@
   <div class="hold">
     <div class="canvas" id="canvas">
 
+      <svg class="leaders" viewBox="0 0 1512 900" aria-hidden="true">
+        <path id="leader" d="M 264 250 L 1368 454.5" fill="none" stroke="currentColor" stroke-width="1"/>
+      </svg>
+
+      <div class="frame" id="frame">
+        <i class="tl"></i><i class="tc"></i><i class="tr"></i>
+        <i class="ml"></i><i class="mr"></i>
+        <i class="bl"></i><i class="bc"></i><i class="br"></i>
+      </div>
+
+      <figure class="card z12" data-z="12" data-fade="in" data-from="992.156,359,129,118.784" data-to="717,376,260,189">
+        <img src="assets/ripple_concept.png" alt="Score distributions under degradation">
+      </figure>
+      <figure class="card z14 split" data-z="14" data-group="connections" data-fade="in" data-from="964.547,359,185.487,118.784" data-to="698,373,299,192">
+        <img src="demo/images/genuine.jpg" alt="Genuine face">
+        <img src="demo/images/impostor.jpg" alt="Impostor face">
+      </figure>
+      <figure class="card z16" data-z="16" data-fade="out" data-from="748,341,229,158" data-to="1060,540,200,224">
+        <img src="assets/ambiguity_demo.gif?v=20261122" alt="Blur sweep demonstration">
+      </figure>
+
+      <figure class="card doc-card" data-z="2" data-group="order" data-fade="in" data-from="748,341,229,158" data-to="1170,521,224,251">
+        <svg viewBox="0 0 200 200" aria-label="Verification results">
+          <text class="lab" x="18" y="42">IJB-B 1e-4</text>
+          <text class="val" x="18" y="80">95.50</text>
+          <line class="ln" x1="18" y1="98" x2="182" y2="98"/>
+          <text class="lab" x="18" y="126">IJB-C 1e-4</text>
+          <text class="val" x="18" y="164">96.82</text>
+        </svg>
+      </figure>
+      <figure class="card" data-z="4" data-group="perception" data-from="1167,371,69,98" data-to="977,263,101,113" style="--b:3.2">
+        <img src="demo/images/probe.jpg" alt="Degraded face">
+      </figure>
+      <figure class="card doc-card" data-z="5" data-fade="out" data-from="1089,341,104,158" data-to="1210,306,110,190">
+        <svg viewBox="0 0 180 300" aria-label="The expected norm constraint">
+          <text class="lab" x="16" y="56">THE CONSTRAINT</text>
+          <text class="fx" x="16" y="108">L = SmoothL1(</text>
+          <text class="fx" x="30" y="136">mean &#8214;x&#7522;&#8214;, &#961; )</text>
+          <line class="ln" x1="16" y1="176" x2="164" y2="176"/>
+          <text class="fx" x="16" y="212">only the mean</text>
+          <text class="fx" x="16" y="236">is anchored</text>
+        </svg>
+      </figure>
+      <figure class="card doc-card" data-z="6" data-fade="out" data-from="992.156,282,129,279" data-to="775,300,150,300">
+        <svg viewBox="0 0 200 240" aria-label="The pairwise score">
+          <text class="lab" x="16" y="52">THE SCORE</text>
+          <text class="fx" x="16" y="100">S = &#8214;f&#8321;&#8214; &#8214;f&#8322;&#8214;</text>
+          <text class="fx" x="30" y="128">(cos &#952; &#8722; b)</text>
+          <line class="ln" x1="16" y1="166" x2="184" y2="166"/>
+          <text class="fx" x="16" y="202">direction is</text>
+          <text class="fx" x="16" y="226">identity</text>
+        </svg>
+      </figure>
+      <figure class="card" data-z="7" data-group="insight" data-from="907,291,120,268" data-to="451,171,92.381,163.526">
+        <img src="demo/images/probe.jpg" alt="Clear face">
+      </figure>
+      <figure class="card" data-z="8" data-group="insight" data-from="478,347,95,146" data-to="243,246,100,153.684" style="--b:0.6">
+        <img src="demo/images/probe.jpg" alt="Face sample, light blur">
+      </figure>
+      <figure class="card" data-z="9" data-group="insight" data-from="534,296,153,249" data-to="333,207.5,126.886,206.501" style="--b:1.2">
+        <img src="demo/images/probe.jpg" alt="Face sample, moderate blur">
+      </figure>
+      <figure class="card" data-z="10" data-fade="out" data-from="639,260,137,316" data-to="425,155,137,316" style="--b:1.8">
+        <img src="demo/images/impostor.jpg" alt="A second identity">
+      </figure>
+      <figure class="card" data-z="11" data-fade="out" data-from="701,308,162,220" data-to="640,230,186,253" style="--b:2.2">
+        <img src="demo/images/genuine.jpg" alt="The mate of the probe">
+      </figure>
+
+      <div class="cap" data-g="insight" style="left:244px;top:426px;max-width:220px">
+        <b>From Clear Faces</b><span>To measured evidence</span>
+      </div>
+      <div class="cap" data-g="connections" style="left:700px;top:578px;max-width:210px">
+        <b>From Two Faces</b><span>To one score</span>
+      </div>
+      <div class="cap" data-g="perception" style="left:1087px;top:307px">
+        <b>From Degradation</b><span>To a low score</span>
+      </div>
+      <div class="cap" data-g="order" style="left:1170px;top:788px;max-width:200px">
+        <b>From Ambiguity</b><span>To a decision</span>
+      </div>
+
       <div class="intro">
         <h1>Concentric Hypersphere Embedding for <i>Pairwise Similarity Learning</i></h1>
         <p class="lede">An angular score says how alike two faces look, not how much evidence supports it.
@@ -274,73 +355,6 @@
           <a class="linkline" href="https://huggingface.co/YunZhe123/Ripple">Pretrained models</a>
           <a class="linkline" href="demo/ambiguity_demo.html">Faces demo</a>
         </div>
-      </div>
-
-      <svg class="leaders" viewBox="0 0 1440 900" aria-hidden="true">
-        <path id="leader" d="M 618 806 L 1352 138" fill="none" stroke="currentColor" stroke-width="1"/>
-      </svg>
-
-      <div class="frame" id="frame">
-        <i class="tl"></i><i class="tc"></i><i class="tr"></i>
-        <i class="ml"></i><i class="mr"></i>
-        <i class="bl"></i><i class="bc"></i><i class="br"></i>
-      </div>
-
-      <!-- group 0 : clear -->
-      <figure class="card" data-g="0" data-x="600" data-y="140" data-w="200" data-z="12" style="--b:0">
-        <img src="demo/images/probe.jpg" alt="Face sample at blur 0"><figcaption><b>&sigma; 0.0</b><span>+60.8</span></figcaption>
-      </figure>
-      <figure class="card" data-g="0" data-x="600" data-y="370" data-w="200" data-z="11" style="--b:0.5">
-        <img src="demo/images/probe.jpg" alt="Face sample at blur 0.9"><figcaption><b>&sigma; 0.9</b><span>+57.7</span></figcaption>
-      </figure>
-      <figure class="card" data-g="0" data-x="600" data-y="600" data-w="200" data-z="10" style="--b:1.0">
-        <img src="demo/images/probe.jpg" alt="Face sample at blur 1.8"><figcaption><b>&sigma; 1.8</b><span>+52.8</span></figcaption>
-      </figure>
-
-      <!-- group 1 : mild -->
-      <figure class="card" data-g="1" data-x="830" data-y="110" data-w="175" data-z="9" style="--b:1.5">
-        <img src="demo/images/probe.jpg" alt="Face sample at blur 2.7"><figcaption><b>&sigma; 2.7</b><span>+47.0</span></figcaption>
-      </figure>
-      <figure class="card" data-g="1" data-x="830" data-y="330" data-w="175" data-z="8" style="--b:2.0">
-        <img src="demo/images/probe.jpg" alt="Face sample at blur 3.6"><figcaption><b>&sigma; 3.6</b><span>+40.5</span></figcaption>
-      </figure>
-      <figure class="card" data-g="1" data-x="830" data-y="550" data-w="175" data-z="7" style="--b:2.5">
-        <img src="demo/images/probe.jpg" alt="Face sample at blur 4.5"><figcaption><b>&sigma; 4.5</b><span>+33.4</span></figcaption>
-      </figure>
-
-      <!-- group 2 : heavy -->
-      <figure class="card" data-g="2" data-x="1040" data-y="170" data-w="165" data-z="6" style="--b:3.0">
-        <img src="demo/images/probe.jpg" alt="Face sample at blur 5.4"><figcaption><b>&sigma; 5.4</b><span>+25.7</span></figcaption>
-      </figure>
-      <figure class="card" data-g="2" data-x="1040" data-y="380" data-w="165" data-z="5" style="--b:3.5">
-        <img src="demo/images/probe.jpg" alt="Face sample at blur 6.3"><figcaption><b>&sigma; 6.3</b><span>+17.6</span></figcaption>
-      </figure>
-      <figure class="card" data-g="2" data-x="1040" data-y="590" data-w="165" data-z="4" style="--b:4.0">
-        <img src="demo/images/probe.jpg" alt="Face sample at blur 7.2"><figcaption><b>&sigma; 7.2</b><span>+9.1</span></figcaption>
-      </figure>
-
-      <!-- group 3 : ambiguous -->
-      <figure class="card" data-g="3" data-x="1235" data-y="210" data-w="150" data-z="3" style="--b:4.5">
-        <img src="demo/images/probe.jpg" alt="Face sample at blur 8.1"><figcaption><b>&sigma; 8.1</b><span>+0.2</span></figcaption>
-      </figure>
-      <figure class="card" data-g="3" data-x="1235" data-y="420" data-w="150" data-z="2" style="--b:5.0">
-        <img src="demo/images/probe.jpg" alt="Face sample at blur 9.0"><figcaption><b>&sigma; 9.0</b><span>&minus;9.1</span></figcaption>
-      </figure>
-      <figure class="card" data-g="3" data-x="1235" data-y="630" data-w="150" data-z="1" style="--b:5.5">
-        <img src="demo/images/probe.jpg" alt="Face sample at blur 10.0"><figcaption><b>&sigma; 10.0</b><span>&minus;19.8</span></figcaption>
-      </figure>
-
-      <div class="cap" data-g="0" style="left:600px;top:812px;width:222px">
-        <b>Clear</b><span>Long vectors, decisive margins</span>
-      </div>
-      <div class="cap" data-g="1" style="left:830px;top:812px;width:196px">
-        <b>Mild</b><span>Evidence begins to thin</span>
-      </div>
-      <div class="cap" data-g="2" style="left:1040px;top:812px;width:186px">
-        <b>Heavy</b><span>Genuine and impostor converge</span>
-      </div>
-      <div class="cap" data-g="3" style="left:1235px;top:812px;width:166px">
-        <b>Ambiguous</b><span>A low score, not a wrong one</span>
       </div>
 
     </div>
@@ -444,81 +458,76 @@
 (function () {
   var stage = document.getElementById('stage');
   var canvas = document.getElementById('canvas');
-  var hold = stage.querySelector('.hold');
   var frame = document.getElementById('frame');
   var leader = document.getElementById('leader');
   var cue = document.getElementById('cue');
   var cards = Array.prototype.slice.call(canvas.querySelectorAll('.card'));
   var caps = Array.prototype.slice.call(canvas.querySelectorAll('.cap'));
-
-  var BASE = 190;
-  var FROM_FRAME = [610, 316, 496, 154];
-  var TO_FRAME = [580, 88, 828, 734];
-  var STACK = { x: 880, y: 400, w: 330 };
   var NARROW = window.matchMedia('(max-width: 900px)');
   var REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var FRAME_FROM = [460, 322, 789, 193];
+  var FRAME_TO = [243, 171, 1151, 601];
+  var activeGroup = null;
+  var lastP = 0;
 
-  cards.forEach(function (c, i) {
-    var z = +c.dataset.z;
-    c._to = { x: +c.dataset.x, y: +c.dataset.y, w: +c.dataset.w };
-    c._rot = z >= 12 ? 8 : z >= 8 ? 4.5 : z >= 4 ? 1.8 : -3;
-    c._from = {
-      x: STACK.x - STACK.w / 2 + (i % 3 - 1) * 7,
-      y: STACK.y - STACK.w / 2 + (i % 4 - 1.5) * 6,
-      w: STACK.w
-    };
-    c.style.zIndex = z;
+  cards.forEach(function (c) {
+    c._f = c.dataset.from.split(',').map(Number);
+    c._t = c.dataset.to.split(',').map(Number);
+    c._z = +c.dataset.z;
+    c._group = c.dataset.group || '';
+    c._fade = c.dataset.fade || '';
   });
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   function lerp(a, b, t) { return a + (b - a) * t; }
-  function smooth(t) { return t * t * (3 - 2 * t); }
+  function Ft(p, a, b) { var s = clamp((p - a) / (b - a), 0, 1); return s * s * (3 - 2 * s); }
 
-  var live = false;
+  function render(p) {
+    lastP = p;
+    cards.forEach(function (c) {
+      var lag = (1 - clamp(c._z / 16, 0, 1)) * 0.105;
+      var n = Ft(p, 0.06 + lag, Math.min(0.98, 0.88 + lag * 0.55));
+      var rot = (n === 0 || n === 1) ? 0 :
+        Math.pow(Math.sin(Math.PI * n), 2) * (c._z % 2 ? -1 : 1) * (c._z >= 12 ? 1.7 : 1.2);
+      var l = lerp(c._f[0], c._t[0], n);
+      var t = lerp(c._f[1], c._t[1], n);
+      var w = lerp(c._f[2], c._t[2], n);
+      var h = lerp(c._f[3], c._t[3], n);
+      var op = (c._fade === 'out' ? 1 - Ft(p, 0.24, 0.72) :
+                c._fade === 'in' ? Ft(p, 0.24, 0.76) : 1) * lerp(0.95, 1, Ft(p, 0.06, 0.88));
+      var dimmed = activeGroup && c._group && c._group !== activeGroup;
+      if (dimmed) op *= 0.22;
+      c.classList.toggle('dim', !!dimmed && p >= 0.94);
 
-  function render(t) {
-    var fade = clamp((t - 0.06) / 0.76, 0, 1);
-    cards.forEach(function (c, i) {
-      var stagger = i * 0.012;
-      var lt = smooth(clamp((t - stagger) / (1 - 11 * 0.012), 0, 1));
-      var x = lerp(c._from.x, c._to.x, lt);
-      var y = lerp(c._from.y, c._to.y, lt);
-      var w = lerp(c._from.w, c._to.w, lt);
-      var cx = x + w / 2;
-      var cy = y + w / 2;
-      c.style.transform = 'translate(' + (cx - BASE / 2).toFixed(2) + 'px,' + (cy - BASE / 2).toFixed(2) +
-        'px) rotate(' + c._rot + 'deg) scale(' + (w / BASE).toFixed(4) + ')';
-      c.style.opacity = lerp(0.94, 1, fade).toFixed(3);
+      c.style.left = l.toFixed(2) + 'px';
+      c.style.top = t.toFixed(2) + 'px';
+      c.style.width = w.toFixed(2) + 'px';
+      c.style.height = h.toFixed(2) + 'px';
+      c.style.opacity = clamp(op, 0, 1).toFixed(3);
+      c.style.transform = 'rotate(' + rot.toFixed(3) + 'deg)';
     });
 
-    var fx = lerp(FROM_FRAME[0], TO_FRAME[0], t);
-    var fy = lerp(FROM_FRAME[1], TO_FRAME[1], t);
-    var fw = lerp(FROM_FRAME[2], TO_FRAME[2], t);
-    var fh = lerp(FROM_FRAME[3], TO_FRAME[3], t);
-    frame.style.transform = 'translate(' + fx.toFixed(2) + 'px,' + fy.toFixed(2) + 'px)';
-    frame.style.width = fw.toFixed(2) + 'px';
-    frame.style.height = fh.toFixed(2) + 'px';
-    frame.style.opacity = (0.6 * (1 - clamp((t - 0.78) / 0.17, 0, 1))).toFixed(3);
+    var i = Ft(p, 0.06, 0.98);
+    frame.style.left = lerp(FRAME_FROM[0], FRAME_TO[0], i).toFixed(2) + 'px';
+    frame.style.top = lerp(FRAME_FROM[1], FRAME_TO[1], i).toFixed(2) + 'px';
+    frame.style.width = lerp(FRAME_FROM[2], FRAME_TO[2], i).toFixed(2) + 'px';
+    frame.style.height = lerp(FRAME_FROM[3], FRAME_TO[3], i).toFixed(2) + 'px';
+    frame.style.opacity = (0.55 * (1 - Ft(p, 0.86, 1))).toFixed(3);
 
-    leader.style.opacity = (0.6 * clamp((t - 0.5) / 0.45, 0, 1)).toFixed(3);
+    leader.style.opacity = (0.7 * Ft(p, 0.5, 0.95)).toFixed(3);
 
-    var capT = clamp((t - 0.86) / 0.14, 0, 1);
+    var capT = Ft(p, 0.82, 1);
     caps.forEach(function (c) {
       c.style.opacity = capT.toFixed(3);
-      c.style.transform = 'translateY(' + ((1 - capT) * 10).toFixed(2) + 'px)';
+      c.style.transform = 'translateY(' + ((1 - capT) * 8).toFixed(2) + 'px)';
     });
 
-    cue.style.opacity = (1 - clamp(t / 0.18, 0, 1)).toFixed(3);
-
-    var hot = t > 0.9;
-    if (!hot) canvas.classList.remove('focus');
-    live = hot;
+    cue.style.opacity = (1 - clamp(p / 0.15, 0, 1)).toFixed(3);
   }
 
   function scaleCanvas() {
     if (NARROW.matches) { canvas.style.transform = ''; return; }
-    var avail = window.innerHeight - 64;
-    var s = Math.min(window.innerWidth / 1440, avail / 900);
+    var s = Math.min(window.innerWidth / 1512, (window.innerHeight - 60) / 900);
     canvas.style.transform = 'scale(' + s.toFixed(4) + ')';
   }
 
@@ -531,21 +540,20 @@
 
   function onScroll() {
     if (NARROW.matches || REDUCE.matches) return;
-    render(smooth(clamp(progress() / 0.9, 0, 1)));
+    render(progress());
   }
 
   cards.forEach(function (c) {
     c.addEventListener('mouseenter', function () {
-      if (!live) return;
-      var g = c.dataset.g;
-      cards.forEach(function (o) { o.classList.toggle('on', o.dataset.g === g); });
-      caps.forEach(function (o) { o.classList.toggle('on', o.dataset.g === g); });
-      canvas.classList.add('focus');
+      if (lastP < 0.94 || !c._group) return;
+      activeGroup = c._group;
+      caps.forEach(function (o) { o.classList.toggle('on', o.dataset.g === c._group); });
+      render(lastP);
     });
     c.addEventListener('mouseleave', function () {
-      canvas.classList.remove('focus');
-      cards.forEach(function (o) { o.classList.remove('on'); });
+      activeGroup = null;
       caps.forEach(function (o) { o.classList.remove('on'); });
+      render(lastP);
     });
   });
 
@@ -556,10 +564,7 @@
     requestAnimationFrame(function () { ticking = false; onScroll(); });
   }, { passive: true });
 
-  window.addEventListener('resize', function () {
-    scaleCanvas();
-    onScroll();
-  });
+  window.addEventListener('resize', function () { scaleCanvas(); onScroll(); });
 
   scaleCanvas();
   if (REDUCE.matches) render(1); else onScroll();
