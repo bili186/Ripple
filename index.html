@@ -24,114 +24,144 @@
     --accent: #b8412e;
     --accent-soft: #f6e9e4;
     --max: 1100px;
+    --nav: 64px;
+    --sans: ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --paper: #121110;
-      --panel: #191817;
-      --ink: #ece8e2;
-      --muted: #a4a19a;
-      --faint: #787570;
-      --rule: #2b2926;
-      --rule-strong: #3d3a36;
-      --accent: #e0705a;
-      --accent-soft: #2a1c18;
+      --paper: #121110; --panel: #191817; --ink: #ece8e2;
+      --muted: #a4a19a; --faint: #787570;
+      --rule: #2b2926; --rule-strong: #3d3a36;
+      --accent: #e0705a; --accent-soft: #2a1c18;
     }
-    .shot img { filter: none; }
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
   body {
     margin: 0; background: var(--paper); color: var(--ink);
-    font: 16px/1.7 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-    -webkit-font-smoothing: antialiased;
+    font: 16px/1.7 var(--serif); -webkit-font-smoothing: antialiased;
   }
   a { color: inherit; text-decoration: none; }
   a:hover { color: var(--accent); }
   ::selection { background: var(--accent); color: var(--paper); }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
   .wrap { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
-  .sans { font-family: ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
   .num { font-variant-numeric: tabular-nums; }
 
-  /* nav */
-  .nav { border-bottom: 1px solid var(--rule); }
-  .nav .wrap { display: flex; align-items: center; gap: 18px; height: 64px; }
-  .nav .brand img { height: 24px; display: block; }
-  .nav .links {
-    margin-left: auto; display: flex; align-items: center; gap: 26px;
-    font: 14px/1 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  /* ---------- nav ---------- */
+  .nav {
+    position: sticky; top: 0; z-index: 40; height: var(--nav);
+    background: var(--paper); border-bottom: 1px solid var(--rule);
   }
+  .nav .wrap { display: flex; align-items: center; gap: 18px; height: 100%; }
+  .nav .brand img { height: 24px; display: block; }
+  .nav .links { margin-left: auto; display: flex; align-items: center; gap: 26px; font: 14px/1 var(--sans); }
   .nav .links a { color: var(--muted); }
   .nav .links a:hover { color: var(--ink); }
   .nav .ext { border-bottom: 1px solid var(--rule-strong); padding-bottom: 2px; }
 
-  /* hero */
-  .hero { padding: 76px 0 84px; }
-  .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 72px; align-items: start; }
-  h1 {
-    margin: 0 0 22px; font-size: clamp(34px, 4.3vw, 54px); line-height: 1.1;
+  /* ---------- scroll stage ---------- */
+  .stage { position: relative; height: 215vh; }
+  .hold {
+    position: sticky; top: 0; height: 100vh; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    padding-top: var(--nav);
+  }
+  .canvas {
+    position: relative; flex: none; width: 1440px; height: 900px;
+    transform-origin: center center; will-change: transform;
+  }
+  .leaders {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    color: var(--rule-strong); opacity: 0; pointer-events: none;
+  }
+
+  .frame {
+    position: absolute; left: 0; top: 0; width: 0; height: 0;
+    border: 1px solid var(--accent); opacity: 0; pointer-events: none;
+  }
+  .frame i {
+    position: absolute; width: 7px; height: 7px; background: var(--panel);
+    border: 1px solid var(--accent); margin: -4px 0 0 -4px;
+  }
+  .frame i.tl { left: 0; top: 0; }
+  .frame i.tc { left: 50%; top: 0; }
+  .frame i.tr { left: 100%; top: 0; }
+  .frame i.ml { left: 0; top: 50%; }
+  .frame i.mr { left: 100%; top: 50%; }
+  .frame i.bl { left: 0; top: 100%; }
+  .frame i.bc { left: 50%; top: 100%; }
+  .frame i.br { left: 100%; top: 100%; }
+
+  .card {
+    position: absolute; left: 0; top: 0; width: 190px; height: 190px; margin: 0;
+    overflow: hidden; background: var(--panel);
+    transform-origin: center center; will-change: transform;
+    box-shadow: 0 1px 2px rgba(24, 18, 12, .10), 0 10px 22px -12px rgba(24, 18, 12, .45);
+    transition: opacity .25s ease, filter .25s ease;
+  }
+  .card img {
+    position: absolute; left: -8%; top: -8%; width: 116%; height: 116%;
+    object-fit: cover; display: block;
+    filter: blur(calc(var(--b, 0) * 1px));
+  }
+  .card figcaption {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    display: flex; justify-content: space-between; gap: 8px; padding: 16px 9px 7px;
+    font: 11.5px/1 var(--sans); letter-spacing: .02em; color: #fff;
+    background: linear-gradient(to top, rgba(10, 8, 6, .62), rgba(10, 8, 6, 0));
+  }
+  .card figcaption b { font-weight: 500; opacity: .92; }
+  .card figcaption span { font-variant-numeric: tabular-nums; }
+
+  .cap {
+    position: absolute; opacity: 0; pointer-events: none;
+    font-family: var(--sans);
+  }
+  .cap b {
+    display: block; font: 500 11px/1 var(--sans); letter-spacing: .14em;
+    text-transform: uppercase; color: var(--faint);
+  }
+  .cap span { display: block; margin-top: 6px; font-size: 13px; line-height: 1.45; color: var(--muted); }
+
+  #canvas.focus .card { opacity: .28 !important; filter: grayscale(1); }
+  #canvas.focus .card.on { opacity: 1 !important; filter: none; }
+  #canvas.focus .cap b { color: var(--faint); }
+  #canvas.focus .cap.on b { color: var(--accent); }
+  #canvas.focus .cap.on span { color: var(--ink); }
+
+  .intro { position: absolute; left: 100px; top: 450px; width: 448px; }
+  .intro h1 {
+    margin: 0 0 20px; font-size: 44px; line-height: 1.12;
     letter-spacing: -.022em; font-weight: 480;
   }
-  h1 i { font-style: italic; color: var(--accent); }
-  .lede { margin: 0 0 30px; color: var(--muted); font-size: 17.5px; line-height: 1.75; max-width: 34ch; }
-  .actions { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+  .intro h1 i { font-style: italic; color: var(--accent); }
+  .lede { margin: 0 0 26px; color: var(--muted); font-size: 16.5px; line-height: 1.72; }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
   .btn {
-    display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 22px;
+    display: inline-flex; align-items: center; height: 42px; padding: 0 20px;
     background: var(--ink); color: var(--paper); border: 1px solid var(--ink);
-    font: 14px/1 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    font: 13.5px/1 var(--sans);
     transition: background .16s ease, border-color .16s ease, transform .16s ease;
   }
   .btn:hover { background: var(--accent); border-color: var(--accent); color: var(--paper); transform: translateY(-1px); }
   .linkline {
-    font: 14px/1.5 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
-    color: var(--muted); border-bottom: 1px solid var(--rule-strong); padding-bottom: 3px;
+    font: 13.5px/1.5 var(--sans); color: var(--muted);
+    border-bottom: 1px solid var(--rule-strong); padding-bottom: 3px;
   }
   .linkline:hover { color: var(--accent); border-color: var(--accent); }
 
-  /* focal panel */
-  .evidence {
-    border: 1px solid var(--rule); background: var(--panel); padding: 22px 22px 18px;
+  .cue {
+    position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%);
+    font: 10.5px/1 var(--sans); letter-spacing: .22em; text-transform: uppercase;
+    color: var(--faint); display: flex; align-items: center; gap: 10px;
   }
-  .ev-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
-  .ev-head .t { font: 13px/1 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--faint); letter-spacing: .02em; }
-  .ev-head .s { margin-left: auto; font-size: 13px; color: var(--faint); }
-  .ev-score { font-size: 34px; line-height: 1.2; letter-spacing: -.01em; margin: 6px 0 0; }
-  .ev-score span + span { font-size: 14px; color: var(--faint); margin-left: 8px; }
-  .ev-svg { display: block; width: 100%; height: auto; }
-  .ev-foot {
-    display: flex; align-items: center; gap: 14px; margin-top: 10px;
-    font: 13px/1.4 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
-  }
-  .verdict {
-    padding: 5px 10px; border: 1px solid var(--rule-strong); color: var(--muted);
-    transition: background .18s ease, border-color .18s ease, color .18s ease;
-    transition-delay: .05s;
-  }
-  .verdict.decisive { background: var(--accent); border-color: var(--accent); color: var(--paper); }
-  .ev-hint { margin-left: auto; color: var(--faint); }
-
-  .slider-wrap { margin-top: 16px; }
-  .slider-wrap .row {
-    display: flex; align-items: baseline; justify-content: space-between;
-    font: 12px/1 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
-    color: var(--faint); letter-spacing: .04em; text-transform: uppercase;
-  }
-  input[type="range"] {
-    -webkit-appearance: none; appearance: none; width: 100%; height: 26px; margin: 8px 0 0;
-    background: transparent; cursor: ew-resize;
-  }
-  input[type="range"]::-webkit-slider-runnable-track { height: 2px; background: var(--rule-strong); }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 14px; height: 14px; margin-top: -6px;
-    background: var(--accent); border: 0; border-radius: 50%;
-  }
-  input[type="range"]::-moz-range-track { height: 2px; background: var(--rule-strong); }
-  input[type="range"]::-moz-range-thumb {
-    width: 14px; height: 14px; background: var(--accent); border: 0; border-radius: 50%;
+  .cue::after {
+    content: ""; width: 1px; height: 22px; background: var(--rule-strong);
   }
 
-  /* sections */
+  /* ---------- sections ---------- */
   section { padding: 84px 0; border-top: 1px solid var(--rule); }
   h2 { margin: 0 0 14px; font-size: clamp(26px, 2.6vw, 34px); line-height: 1.25; letter-spacing: -.015em; font-weight: 480; }
   .sub { margin: 0 0 44px; color: var(--muted); font-size: 16.5px; max-width: 62ch; }
@@ -140,16 +170,13 @@
   .defs { margin: 0; }
   .defs > div { padding: 20px 0; border-top: 1px solid var(--rule); }
   .defs > div:first-child { border-top: 0; padding-top: 0; }
-  .defs dt {
-    font: 15px/1.4 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
-    letter-spacing: .01em; margin-bottom: 6px;
-  }
+  .defs dt { font: 15px/1.4 var(--sans); letter-spacing: .01em; margin-bottom: 6px; }
   .defs dt em { color: var(--accent); font-style: normal; }
   .defs dd { margin: 0; color: var(--muted); font-size: 15.5px; line-height: 1.7; }
 
-  .frame { border: 1px solid var(--rule); background: var(--panel); padding: 16px; }
-  .frame img { width: 100%; display: block; }
-  .frame figcaption { margin: 14px 2px 0; font: 13.5px/1.65 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--muted); }
+  .frame-fig { border: 1px solid var(--rule); background: var(--panel); padding: 16px; margin: 0; }
+  .frame-fig img { width: 100%; display: block; }
+  .frame-fig figcaption { margin: 14px 2px 0; font: 13.5px/1.65 var(--sans); color: var(--muted); }
 
   .demo { display: grid; grid-template-columns: 1.5fr 1fr; gap: 56px; align-items: center; }
   .shot { border: 1px solid var(--rule); background: var(--panel); }
@@ -159,27 +186,18 @@
   table { width: 100%; border-collapse: collapse; font-size: 15px; }
   thead th {
     padding: 0 14px 12px; border-bottom: 1px solid var(--rule-strong); text-align: right;
-    font: 11.5px/1.4 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
-    letter-spacing: .1em; text-transform: uppercase; color: var(--faint); font-weight: 500;
+    font: 500 11.5px/1.4 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--faint);
   }
   thead th:first-child { text-align: left; }
   tbody td { padding: 15px 14px; text-align: right; border-bottom: 1px solid var(--rule); }
-  tbody td:first-child {
-    text-align: left; font: 15px/1.4 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
-  }
+  tbody td:first-child { text-align: left; font: 15px/1.4 var(--sans); }
   tbody tr.ours td { background: var(--accent-soft); }
   tbody tr.ours td:first-child { color: var(--accent); font-weight: 600; }
   tbody td.top { font-weight: 600; }
-  .table-note {
-    margin: 20px 0 0; font: 13.5px/1.7 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
-    color: var(--faint); max-width: 70ch;
-  }
+  .table-note { margin: 20px 0 0; font: 13.5px/1.7 var(--sans); color: var(--faint); max-width: 70ch; }
 
   footer { padding: 52px 0 76px; border-top: 1px solid var(--rule); }
-  footer .row {
-    display: flex; flex-wrap: wrap; align-items: center; gap: 28px;
-    font: 14px/1 ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
-  }
+  footer .row { display: flex; flex-wrap: wrap; align-items: center; gap: 28px; font: 14px/1 var(--sans); }
   footer a { color: var(--muted); border-bottom: 1px solid var(--rule-strong); padding-bottom: 2px; }
   footer a:hover { color: var(--accent); border-color: var(--accent); }
   footer .spacer { margin-left: auto; color: var(--faint); font-size: 13px; }
@@ -189,25 +207,43 @@
   ::-webkit-scrollbar-thumb { background: var(--rule-strong); border: 3px solid var(--paper); }
   ::-webkit-scrollbar-thumb:hover { background: var(--faint); }
 
-  @media (max-width: 960px) {
-    .hero-grid, .two, .demo { grid-template-columns: 1fr; gap: 40px; }
-    .hero { padding: 52px 0 60px; }
-    section { padding: 60px 0; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .btn:hover { transform: none; }
+    .stage { height: 100vh; }
+    .hold { position: relative; }
+  }
+
+  @media (max-width: 900px) {
     .nav .links a.hide-sm { display: none; }
-    .lede { max-width: none; }
+    .nav .links { gap: 16px; }
+    .stage { height: auto; }
+    .hold {
+      position: static; height: auto; overflow: visible; display: block;
+      padding: 36px 20px 8px;
+    }
+    .canvas { width: auto; height: auto; transform: none !important; display: grid;
+      grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .leaders, .frame, .cue { display: none; }
+    .intro { position: static; width: auto; grid-column: 1 / -1; margin-bottom: 14px; }
+    .intro h1 { font-size: clamp(30px, 8vw, 40px); }
+    .card {
+      position: static !important; transform: none !important; opacity: 1 !important;
+      width: 100% !important; height: auto !important; aspect-ratio: 1;
+      transition: none;
+    }
+    .card figcaption { padding: 14px 7px 6px; font-size: 10px; }
+    .cap {
+      position: static !important; opacity: 1 !important; grid-column: 1 / -1;
+      padding-top: 6px;
+    }
+    .cap b { color: var(--accent); }
+    section { padding: 60px 0; }
+    .two, .demo { grid-template-columns: 1fr; gap: 40px; }
     thead th, tbody td { padding-left: 7px; padding-right: 7px; }
   }
   @media (max-width: 480px) {
     .wrap { padding: 0 20px; }
-    .hero-grid { gap: 32px; }
-    .nav .links { gap: 16px; }
-    .evidence { padding: 18px 16px 14px; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
-    .btn:hover { transform: none; }
-    .verdict { transition-delay: 0s; }
   }
 </style>
 </head>
@@ -226,52 +262,100 @@
   </div>
 </nav>
 
-<header class="hero" id="top">
-  <div class="wrap hero-grid">
-    <div>
-      <h1>Concentric Hypersphere Embedding for <i>Pairwise Similarity Learning</i></h1>
-      <p class="lede">An angular score says how alike two faces look, not how much evidence supports it.
-        RipPLE keeps the norm: direction is identity, length is evidence.</p>
-      <div class="actions">
-        <a class="btn" href="https://github.com/bili186/Ripple">Code</a>
-        <a class="linkline" href="https://huggingface.co/YunZhe123/Ripple">Pretrained models</a>
-        <a class="linkline" href="demo/ambiguity_demo.html">Faces demo</a>
-      </div>
-    </div>
+<div class="stage" id="stage">
+  <div class="hold">
+    <div class="canvas" id="canvas">
 
-    <div class="evidence" id="evidence">
-      <div class="ev-head">
-        <span class="t">Embedding of one degraded face</span>
-        <span class="s num" id="ev-norm">&Vert;f&Vert; 8.41</span>
+      <div class="intro">
+        <h1>Concentric Hypersphere Embedding for <i>Pairwise Similarity Learning</i></h1>
+        <p class="lede">An angular score says how alike two faces look, not how much evidence supports it.
+          RipPLE keeps the norm: direction is identity, length is evidence.</p>
+        <div class="actions">
+          <a class="btn" href="https://github.com/bili186/Ripple">Code</a>
+          <a class="linkline" href="https://huggingface.co/YunZhe123/Ripple">Pretrained models</a>
+          <a class="linkline" href="demo/ambiguity_demo.html">Faces demo</a>
+        </div>
       </div>
-      <p class="ev-score num"><span id="ev-score">+60.8</span><span>score against its mate</span></p>
-      <svg class="ev-svg" viewBox="0 0 320 250" role="img" aria-labelledby="ev-desc">
-        <desc id="ev-desc">A vector shrinking toward the centre of concentric spheres as the face degrades.</desc>
-        <g stroke="var(--rule)" fill="none" stroke-width="1">
-          <circle cx="160" cy="125" r="112" stroke-dasharray="3 5"/>
-          <circle cx="160" cy="125" r="84" stroke-dasharray="3 5"/>
-          <circle cx="160" cy="125" r="56" stroke-dasharray="3 5"/>
-          <circle cx="160" cy="125" r="28" stroke-dasharray="3 5"/>
-        </g>
-        <circle cx="160" cy="125" r="2.5" fill="var(--faint)"/>
-        <line id="ev-line" x1="160" y1="125" x2="160" y2="125" stroke="var(--accent)" stroke-width="2"/>
-        <circle id="ev-dot" cx="160" cy="125" r="5.5" fill="var(--accent)"/>
-        <text x="160" y="18" text-anchor="middle" fill="var(--faint)"
-              style="font:12px ui-sans-serif,-apple-system,sans-serif;letter-spacing:.06em">EVIDENCE</text>
-        <line x1="138" y1="236" x2="182" y2="236" stroke="var(--rule-strong)"/>
-        <text x="160" y="230" text-anchor="middle" fill="var(--faint)" style="font:11px ui-sans-serif,-apple-system,sans-serif">centre</text>
+
+      <svg class="leaders" viewBox="0 0 1440 900" aria-hidden="true">
+        <path id="leader" d="M 618 806 L 1352 138" fill="none" stroke="currentColor" stroke-width="1"/>
       </svg>
-      <div class="ev-foot">
-        <span class="verdict decisive" id="ev-verdict">same person</span>
-        <span class="ev-hint">drag to degrade</span>
+
+      <div class="frame" id="frame">
+        <i class="tl"></i><i class="tc"></i><i class="tr"></i>
+        <i class="ml"></i><i class="mr"></i>
+        <i class="bl"></i><i class="bc"></i><i class="br"></i>
       </div>
-      <div class="slider-wrap">
-        <div class="row"><label for="ev-blur">blur</label><span id="ev-sigma" class="num">&sigma; 0.0</span></div>
-        <input id="ev-blur" type="range" min="0" max="10" step="0.5" value="0" aria-label="Blur strength">
+
+      <!-- group 0 : clear -->
+      <figure class="card" data-g="0" data-x="600" data-y="140" data-w="200" data-z="12" style="--b:0">
+        <img src="demo/images/probe.jpg" alt="Face sample at blur 0"><figcaption><b>&sigma; 0.0</b><span>+60.8</span></figcaption>
+      </figure>
+      <figure class="card" data-g="0" data-x="600" data-y="370" data-w="200" data-z="11" style="--b:0.5">
+        <img src="demo/images/probe.jpg" alt="Face sample at blur 0.9"><figcaption><b>&sigma; 0.9</b><span>+57.7</span></figcaption>
+      </figure>
+      <figure class="card" data-g="0" data-x="600" data-y="600" data-w="200" data-z="10" style="--b:1.0">
+        <img src="demo/images/probe.jpg" alt="Face sample at blur 1.8"><figcaption><b>&sigma; 1.8</b><span>+52.8</span></figcaption>
+      </figure>
+
+      <!-- group 1 : mild -->
+      <figure class="card" data-g="1" data-x="830" data-y="110" data-w="175" data-z="9" style="--b:1.5">
+        <img src="demo/images/probe.jpg" alt="Face sample at blur 2.7"><figcaption><b>&sigma; 2.7</b><span>+47.0</span></figcaption>
+      </figure>
+      <figure class="card" data-g="1" data-x="830" data-y="330" data-w="175" data-z="8" style="--b:2.0">
+        <img src="demo/images/probe.jpg" alt="Face sample at blur 3.6"><figcaption><b>&sigma; 3.6</b><span>+40.5</span></figcaption>
+      </figure>
+      <figure class="card" data-g="1" data-x="830" data-y="550" data-w="175" data-z="7" style="--b:2.5">
+        <img src="demo/images/probe.jpg" alt="Face sample at blur 4.5"><figcaption><b>&sigma; 4.5</b><span>+33.4</span></figcaption>
+      </figure>
+
+      <!-- group 2 : heavy -->
+      <figure class="card" data-g="2" data-x="1040" data-y="170" data-w="165" data-z="6" style="--b:3.0">
+        <img src="demo/images/probe.jpg" alt="Face sample at blur 5.4"><figcaption><b>&sigma; 5.4</b><span>+25.7</span></figcaption>
+      </figure>
+      <figure class="card" data-g="2" data-x="1040" data-y="380" data-w="165" data-z="5" style="--b:3.5">
+        <img src="demo/images/probe.jpg" alt="Face sample at blur 6.3"><figcaption><b>&sigma; 6.3</b><span>+17.6</span></figcaption>
+      </figure>
+      <figure class="card" data-g="2" data-x="1040" data-y="590" data-w="165" data-z="4" style="--b:4.0">
+        <img src="demo/images/probe.jpg" alt="Face sample at blur 7.2"><figcaption><b>&sigma; 7.2</b><span>+9.1</span></figcaption>
+      </figure>
+
+      <!-- group 3 : ambiguous -->
+      <figure class="card" data-g="3" data-x="1235" data-y="210" data-w="150" data-z="3" style="--b:4.5">
+        <img src="demo/images/probe.jpg" alt="Face sample at blur 8.1"><figcaption><b>&sigma; 8.1</b><span>+0.2</span></figcaption>
+      </figure>
+      <figure class="card" data-g="3" data-x="1235" data-y="420" data-w="150" data-z="2" style="--b:5.0">
+        <img src="demo/images/probe.jpg" alt="Face sample at blur 9.0"><figcaption><b>&sigma; 9.0</b><span>&minus;9.1</span></figcaption>
+      </figure>
+      <figure class="card" data-g="3" data-x="1235" data-y="630" data-w="150" data-z="1" style="--b:5.5">
+        <img src="demo/images/probe.jpg" alt="Face sample at blur 10.0"><figcaption><b>&sigma; 10.0</b><span>&minus;19.8</span></figcaption>
+      </figure>
+
+      <div class="cap" data-g="0" style="left:600px;top:812px;width:222px">
+        <b>Clear</b><span>Long vectors, decisive margins</span>
       </div>
+      <div class="cap" data-g="1" style="left:830px;top:812px;width:196px">
+        <b>Mild</b><span>Evidence begins to thin</span>
+      </div>
+      <div class="cap" data-g="2" style="left:1040px;top:812px;width:186px">
+        <b>Heavy</b><span>Genuine and impostor converge</span>
+      </div>
+      <div class="cap" data-g="3" style="left:1235px;top:812px;width:166px">
+        <b>Ambiguous</b><span>A low score, not a wrong one</span>
+      </div>
+
     </div>
+    <div class="cue" id="cue">Scroll</div>
   </div>
-</header>
+</div>
+
+<noscript><style>
+  .leaders, .frame, .cap, .cue, .card { display: none; }
+  .stage { height: auto; }
+  .hold { position: static; height: auto; }
+  .canvas { width: auto; height: auto; transform: none; }
+  .intro { position: static; padding: 90px 32px 60px; }
+</style></noscript>
 
 <section id="method">
   <div class="wrap">
@@ -295,7 +379,7 @@
             from a fixed-norm baseline.</dd>
         </div>
       </dl>
-      <figure class="frame">
+      <figure class="frame-fig">
         <img src="assets/ripple_concept.png" alt="Under degradation the genuine and impostor score distributions converge toward zero">
         <figcaption>Degraded faces move closer across identities while a degraded face moves away from its clean
           images. Because the norm records the evidence, both distributions converge toward zero and a degraded
@@ -359,62 +443,126 @@
 
 <script>
 (function () {
-  var root = document.getElementById('evidence');
-  if (!root) return;
-  var slider = root.querySelector('#ev-blur');
-  var line = root.querySelector('#ev-line');
-  var dot = root.querySelector('#ev-dot');
-  var scoreEl = root.querySelector('#ev-score');
-  var normEl = root.querySelector('#ev-norm');
-  var sigEl = root.querySelector('#ev-sigma');
-  var verdict = root.querySelector('#ev-verdict');
-  var CX = 160, CY = 125, ANG = -2.36;
+  var stage = document.getElementById('stage');
+  var canvas = document.getElementById('canvas');
+  var hold = stage.querySelector('.hold');
+  var frame = document.getElementById('frame');
+  var leader = document.getElementById('leader');
+  var cue = document.getElementById('cue');
+  var cards = Array.prototype.slice.call(canvas.querySelectorAll('.card'));
+  var caps = Array.prototype.slice.call(canvas.querySelectorAll('.cap'));
 
-  function score(sigma) {
-    return 60.79 - 80.54 * Math.pow(sigma / 10, 1.35);
-  }
-  function norm(sigma) {
-    return 8.41 - 0.277 * sigma;
-  }
+  var BASE = 190;
+  var FROM_FRAME = [700, 330, 300, 130];
+  var TO_FRAME = [580, 88, 828, 734];
+  var STACK = { x: 992, y: 430 };
+  var NARROW = window.matchMedia('(max-width: 900px)');
+  var REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  function render(sigma) {
-    var n = norm(sigma);
-    var r = 112 * (n / 8.41);
-    var x = CX + Math.cos(ANG) * r;
-    var y = CY + Math.sin(ANG) * r;
-    line.setAttribute('x2', x.toFixed(1));
-    line.setAttribute('y2', y.toFixed(1));
-    dot.setAttribute('cx', x.toFixed(1));
-    dot.setAttribute('cy', y.toFixed(1));
-    var s = score(sigma);
-    scoreEl.textContent = (s >= 0 ? '+' : '\u2212') + Math.abs(s).toFixed(1);
-    normEl.innerHTML = '&Vert;f&Vert; ' + n.toFixed(2);
-    sigEl.innerHTML = '&sigma; ' + sigma.toFixed(1);
-    var decisive = s > 12;
-    verdict.textContent = decisive ? 'same person' : 'hard to decide';
-    verdict.classList.toggle('decisive', decisive);
-    if (slider.value !== String(sigma)) slider.value = sigma;
-  }
-
-  slider.addEventListener('input', function () {
-    render(parseFloat(slider.value));
+  cards.forEach(function (c, i) {
+    var z = +c.dataset.z;
+    c._to = { x: +c.dataset.x, y: +c.dataset.y, w: +c.dataset.w };
+    c._rot = z >= 12 ? 8 : z >= 8 ? 4.5 : z >= 4 ? 1.8 : -3;
+    c._from = {
+      x: STACK.x - BASE / 2 + (i % 3 - 1) * 7,
+      y: STACK.y - BASE / 2 + (i % 4 - 1.5) * 6
+    };
+    c.style.zIndex = z;
   });
 
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduce) {
-    render(0);
-  } else {
-    var start = null, DUR = 2600;
-    var step = function (t) {
-      if (start === null) start = t;
-      var p = Math.min((t - start) / DUR, 1);
-      var eased = 1 - Math.pow(1 - p, 3);
-      render(eased * 10);
-      if (p < 1) requestAnimationFrame(step);
-    };
-    render(0);
-    requestAnimationFrame(step);
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function smooth(t) { return t * t * (3 - 2 * t); }
+
+  var live = false;
+
+  function render(t) {
+    var fade = clamp((t - 0.06) / 0.76, 0, 1);
+    cards.forEach(function (c, i) {
+      var stagger = i * 0.012;
+      var lt = smooth(clamp((t - stagger) / (1 - 11 * 0.012), 0, 1));
+      var x = lerp(c._from.x, c._to.x, lt);
+      var y = lerp(c._from.y, c._to.y, lt);
+      var w = lerp(BASE, c._to.w, lt);
+      var cx = x + w / 2;
+      var cy = y + w / 2;
+      c.style.transform = 'translate(' + (cx - BASE / 2).toFixed(2) + 'px,' + (cy - BASE / 2).toFixed(2) +
+        'px) rotate(' + c._rot + 'deg) scale(' + (w / BASE).toFixed(4) + ')';
+      c.style.opacity = lerp(0.94, 1, fade).toFixed(3);
+    });
+
+    var fx = lerp(FROM_FRAME[0], TO_FRAME[0], t);
+    var fy = lerp(FROM_FRAME[1], TO_FRAME[1], t);
+    var fw = lerp(FROM_FRAME[2], TO_FRAME[2], t);
+    var fh = lerp(FROM_FRAME[3], TO_FRAME[3], t);
+    frame.style.transform = 'translate(' + fx.toFixed(2) + 'px,' + fy.toFixed(2) + 'px)';
+    frame.style.width = fw.toFixed(2) + 'px';
+    frame.style.height = fh.toFixed(2) + 'px';
+    frame.style.opacity = (0.75 * (1 - clamp((t - 0.78) / 0.17, 0, 1))).toFixed(3);
+
+    leader.style.opacity = (0.6 * clamp((t - 0.5) / 0.45, 0, 1)).toFixed(3);
+
+    var capT = clamp((t - 0.86) / 0.14, 0, 1);
+    caps.forEach(function (c) {
+      c.style.opacity = capT.toFixed(3);
+      c.style.transform = 'translateY(' + ((1 - capT) * 10).toFixed(2) + 'px)';
+    });
+
+    cue.style.opacity = (1 - clamp(t / 0.18, 0, 1)).toFixed(3);
+
+    var hot = t > 0.9;
+    if (!hot) canvas.classList.remove('focus');
+    live = hot;
   }
+
+  function scaleCanvas() {
+    if (NARROW.matches) { canvas.style.transform = ''; return; }
+    var avail = window.innerHeight - 64;
+    var s = Math.min(window.innerWidth / 1440, avail / 900);
+    canvas.style.transform = 'scale(' + s.toFixed(4) + ')';
+  }
+
+  function progress() {
+    var rect = stage.getBoundingClientRect();
+    var total = stage.offsetHeight - window.innerHeight;
+    if (total <= 0) return 1;
+    return clamp(-rect.top / total, 0, 1);
+  }
+
+  function onScroll() {
+    if (NARROW.matches || REDUCE.matches) return;
+    render(smooth(clamp(progress() / 0.9, 0, 1)));
+  }
+
+  cards.forEach(function (c) {
+    c.addEventListener('mouseenter', function () {
+      if (!live) return;
+      var g = c.dataset.g;
+      cards.forEach(function (o) { o.classList.toggle('on', o.dataset.g === g); });
+      caps.forEach(function (o) { o.classList.toggle('on', o.dataset.g === g); });
+      canvas.classList.add('focus');
+    });
+    c.addEventListener('mouseleave', function () {
+      canvas.classList.remove('focus');
+      cards.forEach(function (o) { o.classList.remove('on'); });
+      caps.forEach(function (o) { o.classList.remove('on'); });
+    });
+  });
+
+  var ticking = false;
+  window.addEventListener('scroll', function () {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () { ticking = false; onScroll(); });
+  }, { passive: true });
+
+  window.addEventListener('resize', function () {
+    scaleCanvas();
+    onScroll();
+  });
+
+  scaleCanvas();
+  if (REDUCE.matches) render(1); else onScroll();
 })();
 </script>
 
