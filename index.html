@@ -64,9 +64,8 @@
   /* ---------- scroll stage ---------- */
   .stage { position: relative; height: 215vh; }
   .hold {
-    position: sticky; top: 0; height: 100vh; overflow: hidden;
+    position: sticky; top: var(--nav); height: calc(100vh - var(--nav)); overflow: hidden;
     display: flex; align-items: center; justify-content: center;
-    padding-top: var(--nav);
   }
   .canvas {
     position: relative; flex: none; width: 1440px; height: 900px;
@@ -78,7 +77,7 @@
   }
 
   .frame {
-    position: absolute; left: 0; top: 0; width: 0; height: 0;
+    position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 30;
     border: 1px solid var(--accent); opacity: 0; pointer-events: none;
   }
   .frame i {
@@ -120,10 +119,10 @@
     font-family: var(--sans);
   }
   .cap b {
-    display: block; font: 500 11px/1 var(--sans); letter-spacing: .14em;
-    text-transform: uppercase; color: var(--faint);
+    display: block; font: 500 11.5px/1 var(--sans); letter-spacing: .13em;
+    text-transform: uppercase; color: var(--ink);
   }
-  .cap span { display: block; margin-top: 6px; font-size: 13px; line-height: 1.45; color: var(--muted); }
+  .cap span { display: block; margin-top: 7px; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
 
   #canvas.focus .card { opacity: .28 !important; filter: grayscale(1); }
   #canvas.focus .card.on { opacity: 1 !important; filter: none; }
@@ -453,9 +452,9 @@
   var caps = Array.prototype.slice.call(canvas.querySelectorAll('.cap'));
 
   var BASE = 190;
-  var FROM_FRAME = [700, 330, 300, 130];
+  var FROM_FRAME = [610, 316, 496, 154];
   var TO_FRAME = [580, 88, 828, 734];
-  var STACK = { x: 992, y: 430 };
+  var STACK = { x: 880, y: 400, w: 330 };
   var NARROW = window.matchMedia('(max-width: 900px)');
   var REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -464,8 +463,9 @@
     c._to = { x: +c.dataset.x, y: +c.dataset.y, w: +c.dataset.w };
     c._rot = z >= 12 ? 8 : z >= 8 ? 4.5 : z >= 4 ? 1.8 : -3;
     c._from = {
-      x: STACK.x - BASE / 2 + (i % 3 - 1) * 7,
-      y: STACK.y - BASE / 2 + (i % 4 - 1.5) * 6
+      x: STACK.x - STACK.w / 2 + (i % 3 - 1) * 7,
+      y: STACK.y - STACK.w / 2 + (i % 4 - 1.5) * 6,
+      w: STACK.w
     };
     c.style.zIndex = z;
   });
@@ -483,7 +483,7 @@
       var lt = smooth(clamp((t - stagger) / (1 - 11 * 0.012), 0, 1));
       var x = lerp(c._from.x, c._to.x, lt);
       var y = lerp(c._from.y, c._to.y, lt);
-      var w = lerp(BASE, c._to.w, lt);
+      var w = lerp(c._from.w, c._to.w, lt);
       var cx = x + w / 2;
       var cy = y + w / 2;
       c.style.transform = 'translate(' + (cx - BASE / 2).toFixed(2) + 'px,' + (cy - BASE / 2).toFixed(2) +
@@ -498,7 +498,7 @@
     frame.style.transform = 'translate(' + fx.toFixed(2) + 'px,' + fy.toFixed(2) + 'px)';
     frame.style.width = fw.toFixed(2) + 'px';
     frame.style.height = fh.toFixed(2) + 'px';
-    frame.style.opacity = (0.75 * (1 - clamp((t - 0.78) / 0.17, 0, 1))).toFixed(3);
+    frame.style.opacity = (0.6 * (1 - clamp((t - 0.78) / 0.17, 0, 1))).toFixed(3);
 
     leader.style.opacity = (0.6 * clamp((t - 0.5) / 0.45, 0, 1)).toFixed(3);
 
